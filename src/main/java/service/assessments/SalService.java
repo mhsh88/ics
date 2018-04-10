@@ -7,8 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SalService extends BaseService{
+public class SalService extends BaseService {
 
     @Autowired
-    SalRepository salRepository;
+    SalRepository repository;
+
+    public SalService() {
+        setRepository(this.repository);
+    }
 }

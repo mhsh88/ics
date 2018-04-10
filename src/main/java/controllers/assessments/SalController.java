@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import service.assessments.SalService;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -24,8 +25,10 @@ public class SalController{
 //    PUT   TODO  /sals                                         controllers.assessments.SalController.insert()
 //    POST    /sals                                         controllers.assessments.SalController.update()
 //    DELETE  /sals/:id                                     controllers.assessments.SalController.delete(id: Long)
+//    @Autowired
+//    BaseService entityDAO;
     @Autowired
-    BaseService entityDAO;
+    SalService entityDAO;
 
 
     @GetMapping(value="/sals/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -45,9 +45,9 @@ public abstract class BaseService<I extends Serializable, E extends BaseEntity> 
         getRepository().delete(id);
     }
     public List<E> getAll(){
-        return (List<E>) repository.findAll();
+        return (List<E>) getRepository().findAll();
     }
     public E byId(I id){
-        return (E) repository.findOne(id);
+        return (E) getRepository().findOne(id);
     }
 }

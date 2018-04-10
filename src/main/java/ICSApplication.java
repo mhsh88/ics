@@ -16,13 +16,13 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-@SpringBootApplication(scanBasePackages={"com.*","controllers.*","models.*"})//{"models","controllers", "com.payAm.core.ebean"})
+@SpringBootApplication(scanBasePackages={"com.*","controllers.*","models.*","dao.*","service.*"})//{"models","controllers", "com.payAm.core.ebean"})
 @EnableJpaAuditing
 @Configuration
 @PropertySource("application.properties")
 @ComponentScan(basePackages = {"com", "controllers"})
-@EntityScan(basePackages ={"com.*","controllers.*","models.*"}) //{"models"},basePackageClasses = BaseEntity.class)
-@EnableJpaRepositories(basePackages = {"com.*","controllers.*","models.*"})//basePackageClasses = {BaseDAORepository.class, BaseService.class})
+@EntityScan(basePackages ={"com.*","controllers.*","models.*","dao.*","service.*"}) //{"models"},basePackageClasses = BaseEntity.class)
+@EnableJpaRepositories(basePackages = {"com.*","controllers.*","models.*","dao.*","service.*"})//basePackageClasses = {BaseDAORepository.class, BaseService.class})
 @EnableAutoConfiguration
 public class ICSApplication {
     public static void main (String[] args){
@@ -35,8 +35,17 @@ public class ICSApplication {
     public BaseService serviceMapper() {
         return new Service();
     }
+
+    @Bean
+    public SalService salServiceMapper(){
+        return new SalService();
+    }
 }
 
 class Service extends BaseService {
+
+}
+
+class SalService extends service.assessments.SalService{
 
 }
