@@ -4,15 +4,21 @@ package com.payAm.core.model;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.payAm.core.constant.BaseConstants;
 import com.payAm.core.view.BaseView;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.stereotype.Component;
 
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
 import java.io.Serializable;
 
+
+//@Component
 @MappedSuperclass
+@EntityListeners({AuditingEntityListener.class})
+//@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class BaseEntity <I extends Serializable> implements BaseConstants  {
 
     @JsonView(BaseView.class)
+    @GeneratedValue//(strategy = GenerationType.AUTO)
     @Id
     public Long id;
 

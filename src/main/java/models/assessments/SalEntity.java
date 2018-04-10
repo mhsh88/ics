@@ -8,10 +8,7 @@ import dtos.assessments.QuestionHasSalView;
 import dtos.assessments.SalView;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 import java.util.List;
 

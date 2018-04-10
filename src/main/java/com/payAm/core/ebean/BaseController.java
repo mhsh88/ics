@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
  * Created by Payam Mostafaei
  * Creation Time: 2017/Jan/08 - 07:22 PM
  */
-@RestController
-@RequestMapping("/u")
+//@RestController
+//@RequestMapping("/u")
 public abstract class BaseController /*extends Controller */ {
 
 //    @Inject Environment environment;

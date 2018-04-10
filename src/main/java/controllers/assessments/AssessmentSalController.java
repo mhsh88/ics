@@ -1,5 +1,6 @@
 package controllers.assessments;
 
+import com.payAm.core.ebean.BaseController;
 import com.payAm.core.ebean.BaseService;
 import models.assessments.AssessmentSalEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +15,8 @@ import java.util.List;
  * Developer: Payam Mostafaei
  * Creation Time: 2017/Dec/08 - 14:03
  */
-@RestController
-@RequestMapping("/u")
-public class AssessmentSalController {
+
+public class AssessmentSalController extends BaseController {
 //    GET     /assessmentsals/:id                           controllers.assessments.AssessmentSalController.load(id: Long)
 //    GET     /assessmentsals                               controllers.assessments.AssessmentSalController.loadModels()
 //  TODO  PUT     /assessmentsals                               controllers.assessments.AssessmentSalController.insert()

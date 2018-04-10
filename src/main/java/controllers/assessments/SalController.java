@@ -1,5 +1,6 @@
 package controllers.assessments;
 
+import com.payAm.core.ebean.BaseController;
 import com.payAm.core.ebean.BaseService;
 import models.assessments.SalEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/u")
-public class SalController {
+public class SalController{
 //    ### sal ###
 //    GET     /sals/:id                                     controllers.assessments.SalController.load(id: Long)
 //    GET     /sals                                         controllers.assessments.SalController.loadModels()
