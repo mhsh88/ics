@@ -13,7 +13,7 @@ import java.util.List;
 
 @MappedSuperclass
 @Transactional
-public abstract class BaseService<I extends Serializable, E extends BaseEntity> {
+public abstract class BaseService<I extends Serializable, E > {
 
 
 
@@ -35,19 +35,44 @@ public abstract class BaseService<I extends Serializable, E extends BaseEntity> 
     public E insert(E e){
         return (E) getRepository().save(e);
     }
-    public E update(E e){
+    public  E update(E e)
+    {
         return (E) getRepository().save(e);
     }
-    public void delete(E e){
+    public  void delete(E e)
+    {
         getRepository().delete(e);
     }
-    public void delete(I id){
+    public  void delete(I id)
+    {
         getRepository().delete(id);
+
     }
-    public List<E> getAll(){
-        return (List<E>) getRepository().findAll();
+    public  List<E> getAll()
+    {
+        return  getRepository().findAll();
     }
-    public E byId(I id){
+    public  E byId(I id)
+    {
         return (E) getRepository().findOne(id);
     }
+
+//    public E insert(E e){
+//        return (E) getRepository().save(e);
+//    }
+//    public E update(E e){
+//        return (E) getRepository().save(e);
+//    }
+//    public void delete(E e){
+//        getRepository().delete(e);
+//    }
+//    public void delete(I id){
+//        getRepository().delete(id);
+//    }
+//    public List<E> getAll(){
+//        return (List<E>) getRepository().findAll();
+//    }
+//    public E byId(I id){
+//        return (E) getRepository().findOne(id);
+//    }
 }

@@ -2,6 +2,7 @@ import com.fasterxml.jackson.databind.ser.Serializers;
 import com.payAm.core.ebean.BaseDAORepository;
 import com.payAm.core.ebean.BaseService;
 import com.payAm.core.model.BaseEntity;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -15,15 +16,18 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
+
+import javax.persistence.EntityManagerFactory;
 
 @SpringBootApplication(scanBasePackages={"com.*","controllers.*","models.*","dao.*","service.*"})//{"models","controllers", "com.payAm.core.ebean"})
 @EnableJpaAuditing
 @Configuration
 @PropertySource("application.properties")
-@ComponentScan(basePackages = {"com", "controllers"})
-@EntityScan(basePackages ={"com.*","controllers.*","models.*","dao.*","service.*"}) //{"models"},basePackageClasses = BaseEntity.class)
+@ComponentScan(basePackages = {"com", "controllers","com.payAm.core.model.*"})
+@EntityScan(basePackages ={"com.*","controllers.*","models.*","dao.*","service.*","com.payAm.core.model.*"},basePackageClasses = BaseEntity.class) //{"models"},basePackageClasses = BaseEntity.class)
 @EnableJpaRepositories(basePackages = {"com.*","controllers.*","models.*","dao.*","service.*"})//basePackageClasses = {BaseDAORepository.class, BaseService.class})
-@EnableAutoConfiguration
 public class ICSApplication {
     public static void main (String[] args){
 
@@ -40,6 +44,19 @@ public class ICSApplication {
     public SalService salServiceMapper(){
         return new SalService();
     }
+
+//    @Bean
+//    public FactoryBean<EntityManagerFactory> entityManagerFactory() {
+//    ...
+//
+//        entityManagerFactoryBean.setJpaProperties(props);
+//        return entityManagerFactoryBean;
+//    }
+//
+//    @Bean
+//    public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
+//        return new JpaTransactionManager(entityManagerFactory);
+//    }
 }
 
 class Service extends BaseService {
