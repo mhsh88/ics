@@ -32,30 +32,31 @@ public abstract class BaseService<I extends Serializable, E > {
         this.repository = (BaseDAORepository) repository;
     }
 
-    public E insert(E e){
-        return (E) getRepository().save(e);
-    }
-    public  E update(E e)
-    {
-        return (E) getRepository().save(e);
-    }
-    public  void delete(E e)
-    {
-        getRepository().delete(e);
-    }
-    public  void delete(I id)
-    {
-        getRepository().delete(id);
-
-    }
-    public  List<E> getAll()
-    {
-        return  getRepository().findAll();
-    }
-    public  E byId(I id)
-    {
-        return (E) getRepository().findOne(id);
-    }
+    public abstract E insert(E e);
+//    {
+//        return (E) getRepository().save(e);
+//    }
+    public abstract E update(E e);
+//    {
+//        return (E) getRepository().save(e);
+//    }
+    public abstract void delete(E e);
+//    {
+//        getRepository().delete(e);
+//    }
+    public abstract void delete(I id);
+//    {
+//        getRepository().delete(id);
+//
+//    }
+    public abstract List<E> getAll();
+//    {
+//        return  getRepository().findAll();
+//    }
+    public abstract E byId(I id);
+//    {
+//        return (E) getRepository().findOne(id);
+//    }
 
 //    public E insert(E e){
 //        return (E) getRepository().save(e);

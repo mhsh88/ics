@@ -18,6 +18,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
+import service.assessments.AssessmentSalService;
+import service.assessments.SalService;
 
 import javax.persistence.EntityManagerFactory;
 
@@ -25,7 +27,7 @@ import javax.persistence.EntityManagerFactory;
 @EnableJpaAuditing
 @Configuration
 @PropertySource("application.properties")
-@ComponentScan(basePackages = {"com", "controllers","com.payAm.core.model.*"})
+@ComponentScan(basePackages = {"com", "controllers","com.payAm.core.model"})
 @EntityScan(basePackages ={"com.*","controllers.*","models.*","dao.*","service.*","com.payAm.core.model.*"},basePackageClasses = BaseEntity.class) //{"models"},basePackageClasses = BaseEntity.class)
 @EnableJpaRepositories(basePackages = {"com.*","controllers.*","models.*","dao.*","service.*"})//basePackageClasses = {BaseDAORepository.class, BaseService.class})
 public class ICSApplication {
@@ -35,14 +37,19 @@ public class ICSApplication {
         SpringApplication.run(ICSApplication.class, args);
     }
 
-    @Bean
-    public BaseService serviceMapper() {
-        return new Service();
-    }
+//    @Bean
+//    public BaseService serviceMapper() {
+//        return new Service();
+//    }
 
     @Bean
     public SalService salServiceMapper(){
         return new SalService();
+    }
+
+    @Bean
+    public AssessmentSalService assessmentSalServiceMapper(){
+        return new AssessmentSalService();
     }
 
 //    @Bean
@@ -59,10 +66,9 @@ public class ICSApplication {
 //    }
 }
 
-class Service extends BaseService {
+//class Service extends BaseService {
+//
+//}
 
-}
 
-class SalService extends service.assessments.SalService{
 
-}

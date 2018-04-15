@@ -2,11 +2,13 @@ package controllers.assessments;
 
 import com.payAm.core.ebean.BaseController;
 import com.payAm.core.ebean.BaseService;
+import dao.assessments.AssessmentSalRepository;
 import models.assessments.AssessmentSalEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import service.assessments.AssessmentSalService;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -15,7 +17,8 @@ import java.util.List;
  * Developer: Payam Mostafaei
  * Creation Time: 2017/Dec/08 - 14:03
  */
-
+@RestController
+@RequestMapping("/u")
 public class AssessmentSalController extends BaseController {
 //    GET     /assessmentsals/:id                           controllers.assessments.AssessmentSalController.load(id: Long)
 //    GET     /assessmentsals                               controllers.assessments.AssessmentSalController.loadModels()
@@ -24,7 +27,7 @@ public class AssessmentSalController extends BaseController {
 //    DELETE  /assessmentsals/:id                           controllers.assessments.AssessmentSalController.delete(id: Long)
 
     @Autowired
-    BaseService entityDAO;
+    AssessmentSalService entityDAO;
 
 
     @GetMapping(value="/assessmentsals/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

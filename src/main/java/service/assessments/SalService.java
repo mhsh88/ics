@@ -12,37 +12,27 @@ import java.io.Serializable;
 import java.util.List;
 
 @Service
-public class SalService<SalEntity> extends BaseService {
+public class SalService<I> {
 
     @Autowired
     SalRepository repository;
 
-    public SalService() {
-        setRepository(this.repository);
+    public SalEntity insert(SalEntity e){
+        return repository.save(e);
     }
-
-//    @Override
-//    public BaseEntity update(BaseEntity baseEntity) {
-//        return null;
-//    }
-//
-//    @Override
-//    public void delete(BaseEntity baseEntity) {
-//
-//    }
-//
-//    @Override
-//    public void delete(Serializable id) {
-//
-//    }
-//
-//    @Override
-//    public List<SalEntity> getAll() {
-//        return (List<SalEntity>) repository.findAll();
-//    }
-//
-//    @Override
-//    public BaseEntity byId(Serializable id) {
-//        return null;
-//    }
+    public SalEntity update(SalEntity e){
+        return  repository.save(e);
+    }
+    public void delete(SalEntity e){
+        repository.delete(e);
+    }
+    public void delete(I id){
+        repository.delete((Serializable) id);
+    }
+    public List<SalEntity> getAll(){
+        return (List<SalEntity>) repository.findAll();
+    }
+    public SalEntity byId(I id){
+        return (SalEntity) repository.findOne((Serializable) id);
+    }
 }
