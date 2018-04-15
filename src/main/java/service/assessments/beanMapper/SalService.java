@@ -1,5 +1,5 @@
 package service.assessments.beanMapper;
 
-class SalService extends service.assessments.SalService{
+public class SalService extends service.assessments.SalService{
 
 }

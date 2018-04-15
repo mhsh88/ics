@@ -2,6 +2,7 @@ import com.fasterxml.jackson.databind.ser.Serializers;
 import com.payAm.core.ebean.BaseDAORepository;
 import com.payAm.core.ebean.BaseService;
 import com.payAm.core.model.BaseEntity;
+import dao.assessments.SalRepository;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -16,12 +17,14 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import service.assessments.AssessmentSalService;
 import service.assessments.SalService;
 
 import javax.persistence.EntityManagerFactory;
+import java.io.Serializable;
 
 @SpringBootApplication(scanBasePackages={"com.*","controllers.*","models.*","dao.*","service.*"})//{"models","controllers", "com.payAm.core.ebean"})
 @EnableJpaAuditing
@@ -42,15 +45,16 @@ public class ICSApplication {
 //        return new Service();
 //    }
 
-    @Bean
-    public SalService salServiceMapper(){
-        return new SalService();
-    }
+//    @Bean
+//    public SalService salServiceMapper(){
+//        return new SalService();
+//    }
+//
+//    @Bean
+//    public AssessmentSalService assessmentSalServiceMapper(){
+//        return new AssessmentSalService();
+//    }
 
-    @Bean
-    public AssessmentSalService assessmentSalServiceMapper(){
-        return new AssessmentSalService();
-    }
 
 //    @Bean
 //    public FactoryBean<EntityManagerFactory> entityManagerFactory() {
