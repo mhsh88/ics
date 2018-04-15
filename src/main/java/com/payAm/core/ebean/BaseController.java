@@ -3,13 +3,17 @@ package com.payAm.core.ebean;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.payAm.core.i18n.CoreMessagesCodes;
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.ws.Response;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -27,9 +31,26 @@ public abstract class BaseController<T, ID extends Serializable> {
     }
 
     @RequestMapping
-    public @ResponseBody List<T> listAll() {
+    public @ResponseBody ResponseEntity<T> listAll(HttpServletResponse response) {
+//        @ResponseBody
+        PageResult<T> pageResult = new PageResult<>();
+
+
         Iterable<T> all = this.repo.findAll();
-        return Lists.newArrayList(all);
+        for(T a : all){
+            pageResult.addData(a);
+        }
+
+        pageResult.setMessage(CoreMessagesCodes.SUCCESSFUL_LOAD_MODEL);
+
+
+        response.setContentType("text/plain");
+        response.setCharacterEncoding("UTF-8");
+
+
+
+        return (ResponseEntity<T>) ResponseEntity.ok().body(pageResult);
+//        return Lists.newArrayList(all);
     }
 
     @RequestMapping(method=RequestMethod.PUT, consumes={MediaType.APPLICATION_JSON_VALUE})
@@ -45,8 +66,15 @@ public abstract class BaseController<T, ID extends Serializable> {
     }
 
     @RequestMapping(value="/{id}", method=RequestMethod.GET)
-    public @ResponseBody T get(@PathVariable ID id) {
-        return this.repo.findOne(id);
+    public @ResponseBody ResponseEntity<T> get(@PathVariable ID id) {
+        PageResult<T> pageResult = new PageResult<>();
+
+        T model =  this.repo.findOne(id);
+
+        pageResult.addData(model);
+        pageResult.setMessage(CoreMessagesCodes.SUCCESSFUL_LOAD_MODEL);
+
+        return (ResponseEntity<T>) ResponseEntity.ok().body(pageResult);
     }
 
     @RequestMapping(value="/{id}", method=RequestMethod.POST, consumes={MediaType.APPLICATION_JSON_VALUE})
@@ -54,7 +82,12 @@ public abstract class BaseController<T, ID extends Serializable> {
         logger.debug("update() of id#{} with body {}", id, json);
         logger.debug("T json is of type {}", json.getClass());
 
+
+
         T entity = this.repo.findOne(id);
+
+
+
         try {
             BeanUtils.copyProperties(entity, json);
         }

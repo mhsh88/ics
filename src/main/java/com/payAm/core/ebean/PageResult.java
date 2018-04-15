@@ -11,7 +11,7 @@ import java.util.List;
  * Created by Payam Mostafaei
  * Creation Time: 2017/Jan/05 - 09:14 AM
  */
-public class PageResult<M extends Serializable> implements Serializable {
+public class PageResult<M> implements Serializable {
 
     @JsonView(BaseView.class)
     private Boolean success = true;
