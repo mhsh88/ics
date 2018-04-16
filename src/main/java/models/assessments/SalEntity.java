@@ -3,9 +3,10 @@ package models.assessments;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.payAm.core.model.BaseEntity;
 import constants.assessments.SalConstants;
-import dtos.assessments.AssessmentSalView;
-import dtos.assessments.QuestionHasSalView;
-import dtos.assessments.SalView;
+//import dtos.assessments.AssessmentSalView;
+//import dtos.assessments.QuestionHasSalView;
+//import dtos.assessments.SalView;
+import org.hibernate.mapping.FetchProfile;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -18,16 +19,16 @@ import java.util.List;
 public class SalEntity extends BaseEntity implements SalConstants {
 	private static final long serialVersionUID = 1L;
 
-	@JsonView({SalView.class, AssessmentSalView.class, QuestionHasSalView.class})
+//	@JsonView//({SalView.class, AssessmentSalView.class, QuestionHasSalView.class})
 	@Size(max = 45)
 	private String value;
 
-	@JsonView
-	@OneToMany(mappedBy = "sal")
+//	@JsonView
+	@OneToMany(mappedBy = "sal", fetch = FetchType.LAZY)
 	private List<AssessmentSalEntity> assessmentSals;
 
-	@JsonView
-	@OneToMany(mappedBy = "sal")
+//	@JsonView
+	@OneToMany(mappedBy = "sal", fetch = FetchType.LAZY)
 	private List<QuestionHasSalEntity> questionHasSals;
 
 	public static long getSerialVersionUID() {
