@@ -1,8 +1,10 @@
 package com.payAm.core.ebean;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.payAm.core.dto.PageDto;
 import com.payAm.core.i18n.CoreMessagesCodes;
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
@@ -17,8 +19,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.ws.Response;
 import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.util.*;
 
 
 public abstract class BaseController<T, ID extends Serializable> {
@@ -37,6 +41,12 @@ public abstract class BaseController<T, ID extends Serializable> {
 //        @ResponseBody
 
 //        model.addAttribute("accept", "text/plain");
+//        JsonNode pageNode = request.body().asJson();
+//
+//        JsonNode pageNode = Json.parse(request.getQueryString().length() > 0 ?
+//                request.getQueryString().toCharArray()[0] : "{}");
+//                request().queryString().keySet().toArray()[0].toString() : "{}");
+//        PageDto page = Json.fromJson(pageNode, PageDto.class);
         PageResult<T> pageResult = new PageResult<>();
 
 
