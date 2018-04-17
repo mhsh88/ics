@@ -1,5 +1,7 @@
 package com.payAm.core.ebean;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,9 +24,12 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.ws.Response;
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -43,8 +48,22 @@ public abstract class BaseController<T, ID extends Serializable> {
         this.repo = repo;
     }
 
-    @RequestMapping
-    public @ResponseBody ResponseEntity<T> listAll(@RequestParam MultiValueMap<T, T> requestParams, @RequestParam(required = false) PageDto page, @ModelAttribute PageDto page2, @RequestBody(required = false) PageDto page3, PageDto page4, Model model /*HttpServletResponse response, , Model model*//*, @RequestBody PageDto page*/) {
+    @RequestMapping/*(value = "/{queryString}", method=RequestMethod.GET)*/
+    public @ResponseBody ResponseEntity<T> listAll(@RequestParam Map<String,String> params
+                                                 ) throws IOException {
+        PageDto pageDto = getPageDtoFromJson(params);
+
+/*
+        @RequestParam(required = false) String queryString,
+        @RequestParam MultiValueMap<T, T> requestParams,
+        @RequestParam(required = false) PageDto page,
+        @ModelAttribute PageDto page2,*/
+
+        /*@RequestBody(required = false) PageDto page3,
+        PageDto page4,
+        Model model,
+        HttpServletRequest req,
+        String query*/
 //        @ResponseBody
 //        String query = uriInfo.getRequestUri().getQuery();
 //        model.addAttribute("accept", "text/plain");
@@ -57,21 +76,61 @@ public abstract class BaseController<T, ID extends Serializable> {
 
 //        System.out.println(request.getQueryString());
 //        request.getQueryString().length() > 0
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonNode1 = mapper.convertValue(requestParams, JsonNode.class);
-        JsonNode jsonNode2 = mapper.valueToTree(requestParams);
-        try {
-            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode1);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
+//        String jsonString = req.getQueryString();
 
-        try {
-            PageDto page5 = mapper.treeToValue(jsonNode1, PageDto.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        PageDto page5 = mapper.convertValue(jsonNode1, PageDto.class);
+//        set.
+//        set.stream().filter(sample::equals).findAny().orElse(null);
+//        String str = set.stream().findFirst().get();
+//        String jsonString = params.get(0);
+//        params.
+//        params.keySet().
+//        JsonFactory fc = new JsonFactory();
+
+
+//
+//
+//
+//        JsonNode actualObj = null;
+//
+//        JsonFactory factory = mapper.getFactory();
+//        JsonParser jp = factory.createJsonParser(jsonString);
+//        JsonNode jsonNode = jp.readValueAsTree();
+//        PageDto pageFromJsonNode = mapper.treeToValue(jsonNode, PageDto.class);
+//        try {
+//            actualObj = mapper.readTree(jsonString);
+////            System.out.println(actualObj);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        JsonParser parser = null;
+//        try {
+//            parser = factory.createParser(jsonString);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+////        JsonNode actualObj = null;
+//        try {
+//            actualObj = mapper.readTree(parser);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+////        PageDto probe = mapper.convertValue(params, PageDto.class);
+////        JsonNode jsonNode0 = mapper.convertValue(jsonString, JsonNode.class);
+////        JsonNode jsonNode1 = mapper.convertValue(requestParams, JsonNode.class);
+////        JsonNode jsonNode2 = mapper.valueToTree(requestParams);
+////        try {
+////            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode1);
+////        } catch (JsonProcessingException e) {
+////            e.printStackTrace();
+////        }
+//        PageDto page5;
+//        try {
+//             page5 = mapper.treeToValue(actualObj, PageDto.class);
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace();
+//        }
+//        PageDto page6 = mapper.convertValue(actualObj, PageDto.class);
 
         PageResult<T> pageResult = new PageResult<>();
 
@@ -91,6 +150,15 @@ public abstract class BaseController<T, ID extends Serializable> {
 
         return (ResponseEntity<T>) ResponseEntity.ok().body(pageResult);
 //        return Lists.newArrayList(all);
+    }
+
+    private PageDto getPageDtoFromJson(Map<String, String> params) throws IOException {
+        String jsonString = params.keySet().stream().findFirst().get().length() > 0 ?
+                params.keySet().stream().findFirst().get() : "{}";
+
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(jsonString, PageDto.class);
+
     }
 
     @RequestMapping(method=RequestMethod.PUT, consumes={MediaType.APPLICATION_JSON_VALUE})
