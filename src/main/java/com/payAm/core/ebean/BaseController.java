@@ -1,22 +1,29 @@
 package com.payAm.core.ebean;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.payAm.core.dto.PageDto;
 import com.payAm.core.i18n.CoreMessagesCodes;
+import com.payAm.core.model.BaseEntity;
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.web.JsonPath;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
 import javax.xml.ws.Response;
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -37,9 +44,9 @@ public abstract class BaseController<T, ID extends Serializable> {
     }
 
     @RequestMapping
-    public @ResponseBody ResponseEntity<T> listAll(HttpServletResponse response, HttpServletRequest request, Model model) {
+    public @ResponseBody ResponseEntity<T> listAll(@RequestParam MultiValueMap<T, T> requestParams, @RequestParam(required = false) PageDto page, @ModelAttribute PageDto page2, @RequestBody(required = false) PageDto page3, PageDto page4, Model model /*HttpServletResponse response, , Model model*//*, @RequestBody PageDto page*/) {
 //        @ResponseBody
-
+//        String query = uriInfo.getRequestUri().getQuery();
 //        model.addAttribute("accept", "text/plain");
 //        JsonNode pageNode = request.body().asJson();
 //
@@ -47,6 +54,25 @@ public abstract class BaseController<T, ID extends Serializable> {
 //                request.getQueryString().toCharArray()[0] : "{}");
 //                request().queryString().keySet().toArray()[0].toString() : "{}");
 //        PageDto page = Json.fromJson(pageNode, PageDto.class);
+
+//        System.out.println(request.getQueryString());
+//        request.getQueryString().length() > 0
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode1 = mapper.convertValue(requestParams, JsonNode.class);
+        JsonNode jsonNode2 = mapper.valueToTree(requestParams);
+        try {
+            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode1);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            PageDto page5 = mapper.treeToValue(jsonNode1, PageDto.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        PageDto page5 = mapper.convertValue(jsonNode1, PageDto.class);
+
         PageResult<T> pageResult = new PageResult<>();
 
 
@@ -91,7 +117,7 @@ public abstract class BaseController<T, ID extends Serializable> {
         return (ResponseEntity<T>) ResponseEntity.ok().body(pageResult);
     }
 
-    @RequestMapping(value="/{id}", method=RequestMethod.POST, consumes={MediaType.APPLICATION_JSON_VALUE})
+    @RequestMapping(value="/{id}", method=RequestMethod.POST/*, consumes={MediaType.APPLICATION_JSON_VALUE}*/)
     public @ResponseBody Map<String, Object> update(@PathVariable ID id, @RequestBody T json) {
         logger.debug("update() of id#{} with body {}", id, json);
         logger.debug("T json is of type {}", json.getClass());
@@ -121,6 +147,44 @@ public abstract class BaseController<T, ID extends Serializable> {
         m.put("updated", updated);
         return m;
     }
+
+//    @RequestMapping(method=RequestMethod.POST, consumes={MediaType.APPLICATION_JSON_VALUE})
+//    public @ResponseBody Map<String, Object> update( @RequestBody T json/*, */) {
+//
+////        @PathVariable ID json.id;
+//
+//        System.out.println(json);
+//        System.out.println(json.getClass());
+////        Integer id = null;
+//        logger.debug("update() of id#{} with body {}", /*id,*/ json);
+//        logger.debug("T json is of type {}", json.getClass());
+//
+//        ID id = (ID) "1";
+//
+//
+//        T entity = this.repo.findOne(id);
+//
+//
+//
+//        try {
+//            BeanUtils.copyProperties(entity, json);
+//        }
+//        catch (Exception e) {
+//            logger.warn("while copying properties", e);
+//            throw Throwables.propagate(e);
+//        }
+//
+//        logger.debug("merged entity: {}", entity);
+//
+//        T updated = this.repo.save(entity);
+//        logger.debug("updated enitity: {}", updated);
+//
+//        Map<String, Object> m = Maps.newHashMap();
+//        m.put("success", true);
+//        m.put("id", id);
+//        m.put("updated", updated);
+//        return m;
+//    }
 
     @RequestMapping(value="/{id}", method=RequestMethod.DELETE)
     public @ResponseBody Map<String, Object> delete(@PathVariable ID id) {
