@@ -16,8 +16,8 @@ import java.io.Serializable;
 //@EntityListeners({AuditingEntityListener.class})
 
 @MappedSuperclass
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public abstract class BaseEntity <I extends Serializable> implements BaseConstants  {
+//@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+public abstract class BaseEntity <I extends Serializable> implements BaseConstants, BaseModel  {
 
     @JsonView(BaseView.class)
     @GeneratedValue(strategy = GenerationType.AUTO)

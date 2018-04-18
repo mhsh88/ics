@@ -2,6 +2,7 @@ package controllers.assessments;
 
 import com.payAm.core.ebean.BaseController;
 import dao.assessments.SubMetricRepository;
+import dtos.assessments.SubMetricView;
 import models.assessments.SubMetricEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/u/submetrics")
-public class SubMetricController extends BaseController<SubMetricEntity, Long>{
+public class SubMetricController extends BaseController<SubMetricEntity, Long, SubMetricView>{
 
 //### subMetric ###
 //    GET     /submetrics/:id                               controllers.assessments.SubMetricController.load(id: Long)

@@ -3,6 +3,7 @@ package controllers.assessments;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.payAm.core.ebean.BaseController;
 import dao.assessments.PreQuestionAnswerRepository;
+import dtos.assessments.PreQuestionAnswerView;
 import models.assessments.PreQuestionAnswerEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/u/prequestionanswers")
-public class PreQuestionAnswerController extends BaseController<PreQuestionAnswerEntity, Long> {
+public class PreQuestionAnswerController extends BaseController<PreQuestionAnswerEntity, Long, PreQuestionAnswerView> {
 //    ### preQuestionAnswer ###
 //    GET     /prequestionanswers/:id                       controllers.assessments.PreQuestionAnswerController.load(id: Long)
 //    GET     /prequestionanswers                           controllers.assessments.PreQuestionAnswerController.loadModels()

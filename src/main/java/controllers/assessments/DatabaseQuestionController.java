@@ -2,6 +2,7 @@ package controllers.assessments;
 
 import com.payAm.core.ebean.BaseController;
 import dao.assessments.DatabaseQuestionRepository;
+import dtos.assessments.DatabaseQuestionView;
 import models.assessments.DatabaseQuestionEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/u/databasequestions")
-public class DatabaseQuestionController extends BaseController<DatabaseQuestionEntity, Long>{
+public class DatabaseQuestionController extends BaseController<DatabaseQuestionEntity, Long, DatabaseQuestionView>{
 //    ### databaseQuestion ###
 //    GET     /databasequestions/:id                        controllers.assessments.DatabaseQuestionController.load(id: Long)
 //    GET     /databasequestions                            controllers.assessments.DatabaseQuestionController.loadModels()

@@ -2,6 +2,7 @@ package controllers.assessments;
 
 import com.payAm.core.ebean.BaseController;
 import dao.assessments.OrganizationAssessmentHasQuestionRepository;
+import dtos.assessments.OrganizationAssessmentView;
 import models.assessments.OrganizationAssessmentHasQuestionEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/u/organizationassessmenthasquestions")
-public class OrganizationAssessmentHasQuestionController extends BaseController<OrganizationAssessmentHasQuestionEntity, Long> {
+public class OrganizationAssessmentHasQuestionController extends BaseController<OrganizationAssessmentHasQuestionEntity, Long, OrganizationAssessmentView> {
 //
 //### organizationAssessmentHasQuestion ###
 //    GET     /organizationassessmenthasquestions/:id       controllers.assessments.OrganizationAssessmentHasQuestionController.load(id: Long)

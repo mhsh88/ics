@@ -4,6 +4,7 @@ import com.payAm.core.ebean.BaseController;
 import com.payAm.core.ebean.BaseService;
 import dao.assessments.AssessmentSalRepository;
 import dao.assessments.SalRepository;
+import dtos.assessments.AssessmentSalView;
 import models.assessments.AssessmentSalEntity;
 import models.assessments.SalEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/u/assessmentsals")
-public class AssessmentSalController extends BaseController<AssessmentSalEntity, Long> {
+public class AssessmentSalController extends BaseController<AssessmentSalEntity, Long, AssessmentSalView> {
 //    GET     /assessmentsals/:id                           controllers.assessments.AssessmentSalController.load(id: Long)
 //    GET     /assessmentsals                               controllers.assessments.AssessmentSalController.loadModels()
 //  TODO  PUT     /assessmentsals                               controllers.assessments.AssessmentSalController.insert()

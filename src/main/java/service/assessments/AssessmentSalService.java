@@ -12,7 +12,7 @@ import java.util.List;
 
 
 @Service
-public class AssessmentSalService<I> {
+public abstract class AssessmentSalService<I> {
 
     @Autowired
     AssessmentSalRepository repository;
@@ -26,14 +26,16 @@ public class AssessmentSalService<I> {
     public void delete(AssessmentSalEntity e){
         repository.delete(e);
     }
-    public void delete(I id){
-        repository.delete((Serializable) id);
-    }
+    public abstract void delete(I id);
+//    {
+//        repository.delete((Serializable) id);
+//    }
     public List<AssessmentSalEntity> getAll(){
         return (List<AssessmentSalEntity>) repository.findAll();
     }
-    public AssessmentSalEntity byId(I id){
-        return (AssessmentSalEntity) repository.findOne((Serializable) id);
-    }
+    public abstract AssessmentSalEntity byId(I id);
+//    {
+//        return (AssessmentSalEntity) repository.findOne((Serializable) id);
+//    }
 }
 

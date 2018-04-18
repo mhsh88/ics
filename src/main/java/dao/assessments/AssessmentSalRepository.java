@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.io.Serializable;
 
 @Repository
-public interface AssessmentSalRepository extends JpaRepository<AssessmentSalEntity, Serializable> {
+public interface AssessmentSalRepository extends JpaRepository<AssessmentSalEntity, Long> {
 
 }

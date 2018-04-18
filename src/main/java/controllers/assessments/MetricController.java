@@ -2,6 +2,7 @@ package controllers.assessments;
 
 import com.payAm.core.ebean.BaseController;
 import dao.assessments.MetricRepository;
+import dtos.assessments.MetricView;
 import models.assessments.MetricEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/u/metrics")
-public class MetricController extends BaseController<MetricEntity, Long> {
+public class MetricController extends BaseController<MetricEntity, Long, MetricView> {
 
 //### metric ###
 //    GET     /metrics/:id                                  controllers.assessments.MetricController.load(id: Long)
