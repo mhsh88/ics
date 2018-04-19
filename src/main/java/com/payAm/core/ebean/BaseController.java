@@ -7,6 +7,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.payAm.core.dto.PageDto;
 import com.payAm.core.i18n.CoreMessagesCodes;
+import com.payAm.core.model.BaseEntity;
 import com.payAm.core.model.BaseModel;
 import com.payAm.core.util.ReflectionUtil;
 import com.payAm.core.view.BaseView;
@@ -30,9 +31,10 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Selection;
 
 
-public abstract class BaseController<T extends BaseModel, ID extends Serializable, V extends BaseView> {
+public abstract class BaseController<T extends BaseEntity, ID extends Serializable, V extends BaseView> {
 
     private Logger logger = LoggerFactory.getLogger(RestController.class);
 
@@ -40,6 +42,8 @@ public abstract class BaseController<T extends BaseModel, ID extends Serializabl
 
     @PersistenceContext
     EntityManager entityManager;
+
+    public abstract BaseDao<ID, T> getDao();
 
 
     public BaseController(CrudRepository<T, ID> repo) {
@@ -138,10 +142,11 @@ public abstract class BaseController<T extends BaseModel, ID extends Serializabl
             List<String> fields = getFetchedFields();
             pageDto.setFetchFields(fields);
             Iterable<T> all1 = getdata(pageDto);
+            modelsPageResult.setData((List<T>) all1);
 //            Iterable<T> all = this.repo.findAll();
-            for(T a : all1){
-                modelsPageResult.addData(a);
-            }
+//            for(T a : all1){
+//                modelsPageResult.addData(a);
+//            }
 //            modelsPageResult = find(pageDto);
             for (T model : modelsPageResult.getData()) {
                 afterLoad(model);
@@ -255,10 +260,7 @@ public abstract class BaseController<T extends BaseModel, ID extends Serializabl
         }
         return null;
     }
-    protected PageResult<T> find(PageDto page) throws Exception {
-//        return getDao().find(page);
-        return new PageResult<>();
-    }
+
     protected Class<V> getViewClass() {
         Class<?> clazz = getClass();
         while (clazz.getGenericSuperclass() != null) {
@@ -285,6 +287,8 @@ public abstract class BaseController<T extends BaseModel, ID extends Serializabl
         CriteriaQuery<T> query = criteriaBuilder.createQuery(getModelClass());
         Root<T> entityRoot = query.from(getModelClass());
         query.select(entityRoot);
+        Selection<T> selection;
+//        selection.alias()
 
         // TODO now we can add property and where
         // Predicate p = cb.notEqual(e.type(), cb.literal(Country.class));
@@ -293,5 +297,9 @@ public abstract class BaseController<T extends BaseModel, ID extends Serializabl
 
         List<T> entities = qry.getResultList();
         return entities;
+    }
+
+    protected PageResult<T> find(PageDto page) throws Exception {
+        return getDao().find(page);
     }
 }

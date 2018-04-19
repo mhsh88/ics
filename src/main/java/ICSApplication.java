@@ -1,45 +1,25 @@
-import com.fasterxml.jackson.databind.ser.Serializers;
-import com.payAm.core.ebean.BaseDAORepository;
-import com.payAm.core.ebean.BaseService;
 import com.payAm.core.model.BaseEntity;
-import dao.assessments.SalRepository;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.annotation.Autowired;
+import daos.assessments.*;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import service.assessments.AssessmentSalService;
-import service.assessments.SalService;
 
-import javax.persistence.EntityManagerFactory;
-import java.io.Serializable;
-
-@SpringBootApplication(scanBasePackages={"com.*","controllers.*","models.*","dao.*","service.*"})//{"models","controllers", "com.payAm.core.ebean"})
+@SpringBootApplication(scanBasePackages={"com.*","controllers.*","models.*", "repositories.*","service.*","daos.*"})//{"models","controllers", "com.payAm.core.ebean"})
 @EnableJpaAuditing
 @Configuration
 @PropertySource("application.properties")
 @ComponentScan(basePackages = {"com", "controllers","com.payAm.core.model"})
-@EntityScan(basePackages ={"com.*","controllers.*","models.*","dao.*","service.*","com.payAm.core.model.*"},basePackageClasses = BaseEntity.class) //{"models"},basePackageClasses = BaseEntity.class)
-@EnableJpaRepositories(basePackages = {"com.*","controllers.*","models.*","dao.*","service.*"})//basePackageClasses = {BaseDAORepository.class, BaseService.class})
+@EntityScan(basePackages ={"com.*","controllers.*","models.*","repositories.*","service.*","com.payAm.core.model.*","daos.*"},basePackageClasses = BaseEntity.class) //{"models"},basePackageClasses = BaseEntity.class)
+@EnableJpaRepositories(basePackages = {"com.*","controllers.*","models.*", "repositories.*","service.*","daos.*"})//basePackageClasses = {BaseDAORepository.class, BaseService.class})
 public class ICSApplication {
     public static void main (String[] args){
 
@@ -58,6 +38,63 @@ public class ICSApplication {
                         .allowedHeaders("*");
             }
         };
+    }
+    @Bean
+    public AssessmentSalDao assessmentSalDaoBean(){
+        return new AssessmentSalDao();
+    }
+    @Bean
+    public DatabaseQuestionDao databaseQuestionDao() {
+        return new DatabaseQuestionDao();
+    }
+    @Bean
+    public MetricDao metricDao(){
+        return new MetricDao();
+    }
+    @Bean
+    public OrganizationAssessmentDao organizationAssessmentDao(){
+        return new OrganizationAssessmentDao();
+    }
+    @Bean
+    public OrganizationAssessmentHasQuestionDao organizationAssessmentHasQuestionDao(){
+        return new OrganizationAssessmentHasQuestionDao();
+    }
+    @Bean
+    public PreQuestionAnswerDao preQuestionAnswerDao(){
+        return new PreQuestionAnswerDao();
+    }
+    @Bean
+    public PreQuestionDao preQuestionDao(){
+        return new PreQuestionDao();
+    }
+    @Bean
+    public QuestionAnswerDao questionAnswerDao(){
+        return new QuestionAnswerDao();
+    }
+
+    @Bean
+    public QuestionDao questionDao(){
+        return new QuestionDao();
+    }
+    @Bean
+    public QuestionHasSalDao questionHasSalDao(){
+        return new QuestionHasSalDao();
+    }
+    @Bean
+    public QuestionScopeDao questionScopeDao(){
+        return new QuestionScopeDao();
+    }
+    @Bean
+    public StandardDao standardDao(){
+        return new StandardDao();
+    }
+    @Bean
+    public SalDao salDao(){
+        return new SalDao();
+    }
+    @Bean
+    public SubMetricDao subMetricDao(){
+        return new SubMetricDao();
     }
 //        @Bean
 //        public FilterRegistrationBean corsFilter() {

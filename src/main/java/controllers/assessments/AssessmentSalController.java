@@ -1,22 +1,17 @@
 package controllers.assessments;
 
 import com.payAm.core.ebean.BaseController;
-import com.payAm.core.ebean.BaseService;
-import dao.assessments.AssessmentSalRepository;
-import dao.assessments.SalRepository;
+import com.payAm.core.ebean.BaseDao;
+import daos.assessments.AssessmentSalDao;
+import daos.assessments.DatabaseQuestionDao;
+import repositories.assessments.AssessmentSalRepository;
 import dtos.assessments.AssessmentSalView;
 import models.assessments.AssessmentSalEntity;
-import models.assessments.SalEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import service.assessments.AssessmentSalService;
 
-import javax.validation.Valid;
-import java.util.List;
+import javax.inject.Inject;
 
 /**
  * Developer: Payam Mostafaei
@@ -32,10 +27,18 @@ public class AssessmentSalController extends BaseController<AssessmentSalEntity,
 //    DELETE  /assessmentsals/:id                           controllers.assessments.AssessmentSalController.delete(id: Long)
 
 
-        @Autowired
-        public AssessmentSalController(AssessmentSalRepository repo) {
+    @Autowired
+    public AssessmentSalController(AssessmentSalRepository repo) {
             super((CrudRepository) repo);
         }
+
+    @Inject
+    private AssessmentSalDao dao;
+
+    @Override
+    public BaseDao<Long, AssessmentSalEntity> getDao() {
+        return dao;
+    }
 
 //    @Autowired
 //    AssessmentSalService entityDAO;
@@ -80,11 +83,11 @@ public class AssessmentSalController extends BaseController<AssessmentSalEntity,
 
 //
 //    @Inject
-//    private AssessmentSalDao dao;
+//    private AssessmentSalDao repositories;
 //
 //    @Override
 //    public BaseDao<Long, AssessmentSalEntity> getDao() {
-//        return dao;
+//        return repositories;
 //    }
 //
 //    @Override

@@ -1,4 +1,4 @@
-package dao.assessments;
+package repositories.assessments;
 
 import models.assessments.OrganizationAssessmentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

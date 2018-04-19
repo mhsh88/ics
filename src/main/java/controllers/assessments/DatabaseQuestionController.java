@@ -1,13 +1,19 @@
 package controllers.assessments;
 
 import com.payAm.core.ebean.BaseController;
-import dao.assessments.DatabaseQuestionRepository;
+import com.payAm.core.ebean.BaseDao;
+import daos.assessments.AssessmentSalDao;
+import daos.assessments.DatabaseQuestionDao;
+import models.assessments.AssessmentSalEntity;
+import repositories.assessments.DatabaseQuestionRepository;
 import dtos.assessments.DatabaseQuestionView;
 import models.assessments.DatabaseQuestionEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.inject.Inject;
 
 
 @RestController
@@ -23,4 +29,12 @@ public class DatabaseQuestionController extends BaseController<DatabaseQuestionE
             public DatabaseQuestionController(DatabaseQuestionRepository repo) {
                 super((CrudRepository) repo);
             }
+
+    @Inject
+    private DatabaseQuestionDao dao;
+
+    @Override
+    public BaseDao<Long, DatabaseQuestionEntity> getDao() {
+        return dao;
+    }
 }

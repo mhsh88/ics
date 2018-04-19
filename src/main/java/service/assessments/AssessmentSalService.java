@@ -1,13 +1,10 @@
 package service.assessments;
 
-import com.payAm.core.ebean.BaseService;
-import com.payAm.core.model.BaseEntity;
-import dao.assessments.AssessmentSalRepository;
+import repositories.assessments.AssessmentSalRepository;
 import models.assessments.AssessmentSalEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.Serializable;
 import java.util.List;
 
 

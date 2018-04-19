@@ -1,15 +1,19 @@
 package controllers.assessments;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import com.payAm.core.ebean.BaseController;
-import dao.assessments.PreQuestionAnswerRepository;
+import com.payAm.core.ebean.BaseDao;
+import daos.assessments.OrganizationAssessmentHasQuestionDao;
+import daos.assessments.PreQuestionAnswerDao;
+import models.assessments.OrganizationAssessmentHasQuestionEntity;
+import repositories.assessments.PreQuestionAnswerRepository;
 import dtos.assessments.PreQuestionAnswerView;
 import models.assessments.PreQuestionAnswerEntity;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.inject.Inject;
 
 @RestController
 @RequestMapping("/u/prequestionanswers")
@@ -23,5 +27,14 @@ public class PreQuestionAnswerController extends BaseController<PreQuestionAnswe
     @Autowired
     public PreQuestionAnswerController(PreQuestionAnswerRepository repo){
         super((CrudRepository) repo);
+    }
+
+
+    @Inject
+    private PreQuestionAnswerDao dao;
+
+    @Override
+    public BaseDao<Long, PreQuestionAnswerEntity> getDao() {
+        return dao;
     }
 }

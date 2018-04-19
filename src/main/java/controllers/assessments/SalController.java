@@ -1,20 +1,18 @@
 package controllers.assessments;
 
 import com.payAm.core.ebean.BaseController;
-import com.payAm.core.ebean.BaseService;
-import dao.assessments.AssessmentSalRepository;
-import dao.assessments.SalRepository;
+import com.payAm.core.ebean.BaseDao;
+import daos.assessments.QuestionAnswerDao;
+import daos.assessments.SalDao;
+import models.assessments.QuestionAnswerEntity;
+import repositories.assessments.SalRepository;
 import dtos.assessments.SalView;
 import models.assessments.SalEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import service.assessments.SalService;
 
-import javax.validation.Valid;
-import java.util.List;
+import javax.inject.Inject;
 
 /**
  * Developer: Payam Mostafaei
@@ -33,6 +31,15 @@ public class SalController extends BaseController<SalEntity, Long, SalView>{
     @Autowired
     public SalController(SalRepository repo) {
         super((CrudRepository) repo);
+    }
+
+
+    @Inject
+    private SalDao dao;
+
+    @Override
+    public BaseDao<Long, SalEntity> getDao() {
+        return dao;
     }
 
 

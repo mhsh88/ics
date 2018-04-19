@@ -1,13 +1,19 @@
 package controllers.assessments;
 
 import com.payAm.core.ebean.BaseController;
-import dao.assessments.StandardRepository;
+import com.payAm.core.ebean.BaseDao;
+import daos.assessments.QuestionAnswerDao;
+import daos.assessments.StandardDao;
+import models.assessments.QuestionAnswerEntity;
+import repositories.assessments.StandardRepository;
 import dtos.assessments.StandardView;
 import models.assessments.StandardEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.inject.Inject;
 
 @RestController
 @RequestMapping("/u/standards")
@@ -23,5 +29,14 @@ public class StandardController  extends BaseController<StandardEntity, Long, St
     @Autowired
     public StandardController(StandardRepository repo){
         super((CrudRepository) repo);
+    }
+
+
+    @Inject
+    private StandardDao dao;
+
+    @Override
+    public BaseDao<Long, StandardEntity> getDao() {
+        return dao;
     }
 }

@@ -1,13 +1,18 @@
 package controllers.assessments;
 
 import com.payAm.core.ebean.BaseController;
-import dao.assessments.OrganizationAssessmentRepository;
+import com.payAm.core.ebean.BaseDao;
+import daos.assessments.DatabaseQuestionDao;
+import daos.assessments.OrganizationAssessmentDao;
+import repositories.assessments.OrganizationAssessmentRepository;
 import dtos.assessments.OrganizationAssessmentView;
 import models.assessments.OrganizationAssessmentEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.inject.Inject;
 
 @RestController
 @RequestMapping("/u/organizationassessments")
@@ -22,5 +27,14 @@ public class OrganizationAssessmentController extends BaseController<Organizatio
     @Autowired
     public OrganizationAssessmentController(OrganizationAssessmentRepository repo){
         super((CrudRepository) repo);
+    }
+
+
+    @Inject
+    private OrganizationAssessmentDao dao;
+
+    @Override
+    public BaseDao<Long, OrganizationAssessmentEntity> getDao() {
+        return dao;
     }
 }

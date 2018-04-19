@@ -1,9 +1,7 @@
 package service.assessments;
 
 
-import com.payAm.core.ebean.BaseService;
-import com.payAm.core.model.BaseEntity;
-import dao.assessments.SalRepository;
+import repositories.assessments.SalRepository;
 import models.assessments.SalEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

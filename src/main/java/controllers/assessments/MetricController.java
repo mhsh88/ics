@@ -1,13 +1,19 @@
 package controllers.assessments;
 
 import com.payAm.core.ebean.BaseController;
-import dao.assessments.MetricRepository;
+import com.payAm.core.ebean.BaseDao;
+import daos.assessments.DatabaseQuestionDao;
+import daos.assessments.MetricDao;
+import models.assessments.DatabaseQuestionEntity;
+import repositories.assessments.MetricRepository;
 import dtos.assessments.MetricView;
 import models.assessments.MetricEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.inject.Inject;
 
 @RestController
 @RequestMapping("/u/metrics")
@@ -24,4 +30,15 @@ public class MetricController extends BaseController<MetricEntity, Long, MetricV
     public MetricController (MetricRepository repo){
         super( (CrudRepository) repo);
     }
+
+
+    @Inject
+    private MetricDao dao;
+
+    @Override
+    public BaseDao<Long, MetricEntity> getDao() {
+        return dao;
+    }
+
+
 }
