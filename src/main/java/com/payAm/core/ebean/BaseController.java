@@ -8,7 +8,6 @@ import com.google.common.collect.Maps;
 import com.payAm.core.dto.PageDto;
 import com.payAm.core.i18n.CoreMessagesCodes;
 import com.payAm.core.model.BaseEntity;
-import com.payAm.core.model.BaseModel;
 import com.payAm.core.util.ReflectionUtil;
 import com.payAm.core.view.BaseView;
 import org.apache.commons.beanutils.BeanUtils;
@@ -23,7 +22,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
-import play.libs.Json;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -37,6 +35,8 @@ import javax.persistence.criteria.Selection;
 public abstract class BaseController<T extends BaseEntity, ID extends Serializable, V extends BaseView> {
 
     private Logger logger = LoggerFactory.getLogger(RestController.class);
+
+    ObjectMapper mapper = new ObjectMapper();
 
     private CrudRepository<T, ID> repo;
 
@@ -141,21 +141,24 @@ public abstract class BaseController<T extends BaseEntity, ID extends Serializab
         try {
             List<String> fields = getFetchedFields();
             pageDto.setFetchFields(fields);
-            Iterable<T> all1 = getdata(pageDto);
-            modelsPageResult.setData((List<T>) all1);
+//            Iterable<T> all1 = getdata(pageDto);
+//            modelsPageResult.setData((List<T>) all1);
 //            Iterable<T> all = this.repo.findAll();
 //            for(T a : all1){
 //                modelsPageResult.addData(a);
 //            }
-//            modelsPageResult = find(pageDto);
+            modelsPageResult = find(pageDto);
             for (T model : modelsPageResult.getData()) {
                 afterLoad(model);
             }
-            return ResponseEntity.ok().body(writeJson(modelsPageResult));
+
+            return ResponseEntity.ok().body(mapper.writerWithView(getViewClass()).writeValueAsString(modelsPageResult));
+//            return ResponseEntity.ok().body(modelsPageResult);
         }
         catch (Exception e) {
             modelsPageResult.unsuccessfulOperation(e.getMessage());
-            return ResponseEntity.badRequest().body(writeJson(modelsPageResult));
+            return ResponseEntity.badRequest().body(mapper.writerWithView(getViewClass()).writeValueAsString(modelsPageResult));
+//            return ResponseEntity.badRequest().body(modelsPageResult);
         }
 
 
@@ -177,7 +180,7 @@ public abstract class BaseController<T extends BaseEntity, ID extends Serializab
         String jsonString = params.keySet().stream().findFirst().get().length() > 0 ?
                 params.keySet().stream().findFirst().get() : "{}";
 
-        ObjectMapper mapper = new ObjectMapper();
+//        ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(jsonString, PageDto.class);
 
     }
@@ -204,7 +207,7 @@ public abstract class BaseController<T extends BaseEntity, ID extends Serializab
         pageResult.addData(model);
         pageResult.setMessage(CoreMessagesCodes.SUCCESSFUL_LOAD_MODEL);
 
-        return  ResponseEntity.ok().body(writeJson(pageResult));
+        return  ResponseEntity.ok().body(mapper.writerWithView(getViewClass()).writeValueAsString(pageResult));
     }
 
     @RequestMapping(value="/{id}", method=RequestMethod.POST/*, consumes={MediaType.APPLICATION_JSON_VALUE}*/)
@@ -273,20 +276,21 @@ public abstract class BaseController<T extends BaseEntity, ID extends Serializab
         return null;
     }
 
-    protected String writeJson(PageResult<T> pageResult) throws JsonProcessingException {
-        return Json.mapper().writerWithView(getViewClass()).writeValueAsString(pageResult);
-    }
-
-    protected T readJson(JsonNode jsonNode) throws java.io.IOException {
-        return Json.mapper().readerWithView(getViewClass()).forType(getModelClass()).readValue(jsonNode);
-    }
+//    protected String writeJson(PageResult<T> pageResult) throws JsonProcessingException {
+//        return Json.mapper().writerWithView(getViewClass()).writeValueAsString(pageResult);
+//    }
+//
+//    protected T readJson(JsonNode jsonNode) throws java.io.IOException {
+//        return Json.mapper().readerWithView(getViewClass()).forType(getModelClass()).readValue(jsonNode);
+//    }
 
 
     private List<T> getdata(PageDto page){
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> query = criteriaBuilder.createQuery(getModelClass());
+        Class<T> clasz = getModelClass();
         Root<T> entityRoot = query.from(getModelClass());
-        query.select(entityRoot);
+        query.select(entityRoot)/*.from(getModelClass())*/;
         Selection<T> selection;
 //        selection.alias()
 
