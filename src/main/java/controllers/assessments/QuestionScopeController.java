@@ -4,16 +4,19 @@ import com.payAm.core.ebean.BaseController;
 import com.payAm.core.ebean.BaseDao;
 import daos.assessments.QuestionAnswerDao;
 import daos.assessments.QuestionScopeDao;
-import models.assessments.QuestionAnswerEntity;
+import models.assessments.*;
 import repositories.assessments.QuestionScopeRepository;
 import dtos.assessments.QuestionScopeView;
-import models.assessments.QuestionScopeEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.payAm.core.util.StringUtil.DOT;
 
 @RestController
 @RequestMapping("/u/questionscopes")
@@ -37,5 +40,16 @@ public class QuestionScopeController  extends BaseController<QuestionScopeEntity
     @Override
     public BaseDao<Long, QuestionScopeEntity> getDao() {
         return dao;
+    }
+
+    @Override
+    protected List<String> getFetchedFields() {
+        return super.getFetchedFields();
+//        List<String> fields = new ArrayList<>();
+//        fields.add(QuestionScopeEntity.ID);
+////        fields.add(QuestionScopeEntity.DELETED);
+//        fields.add(QuestionScopeEntity.VALUE);
+//
+//        return fields;
     }
 }

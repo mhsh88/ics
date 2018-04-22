@@ -17,13 +17,13 @@ public class AssessmentSalEntity extends BaseEntity implements AssessmentSalCons
 	private static final long serialVersionUID = 1L;
 
 	@JsonView(AssessmentSalView.class)
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "sal_id")
 	private SalEntity sal;
 
 	@JsonView
 	@OneToMany(mappedBy = "assessmentSal")
-	@Basic(fetch = FetchType.LAZY)
+	@Basic
 	private List<OrganizationAssessmentEntity> organizationAssessments;
 
 	@JsonView(AssessmentSalView.class)

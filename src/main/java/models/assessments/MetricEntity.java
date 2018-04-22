@@ -1,11 +1,13 @@
 package models.assessments;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.payAm.core.model.BaseEntity;
 import constants.assessments.MetricConstants;
 import dtos.assessments.MetricView;
 import dtos.assessments.QuestionHasSalView;
 import org.hibernate.FetchMode;
+import org.hibernate.annotations.Fetch;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -17,12 +19,13 @@ import static org.hibernate.FetchMode.JOIN;
 @Entity
 @Table(name = "metric")
 @EntityListeners({AuditingEntityListener.class})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class MetricEntity extends BaseEntity implements MetricConstants {
 	private static final long serialVersionUID = 1L;
 
 	@JsonView({MetricView.class, QuestionHasSalView.class})
 	@Lob
-	@Basic(fetch = FetchType.LAZY)
+//	@Basic(fetch = FetchType.LAZY)
 	public String text;
 
 	@JsonView({MetricView.class, QuestionHasSalView.class})
@@ -33,7 +36,7 @@ public class MetricEntity extends BaseEntity implements MetricConstants {
 
 	@JsonView
 	@OneToMany(mappedBy = "metric", fetch = FetchType.LAZY, cascade =  CascadeType.ALL)
-//	@Basic(FetchMode.JOIN)
+//	@Fetch(org.hibernate.annotations.FetchMode.JOIN)
 	public List<QuestionHasSalEntity> questionHasSals;
 
     public MetricEntity() {

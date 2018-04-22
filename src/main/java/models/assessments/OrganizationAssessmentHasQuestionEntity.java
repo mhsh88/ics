@@ -38,4 +38,13 @@ public class OrganizationAssessmentHasQuestionEntity extends BaseEntity implemen
 
 	@JsonView(OrganizationAssessmentHasQuestionView.class)
 	public Float weight;
+
+    public OrganizationAssessmentHasQuestionEntity() {
+    }
+
+    public OrganizationAssessmentHasQuestionEntity(Long id, Integer priority, Float weight) {
+		super.id = id;
+		this.priority = priority;
+		this.weight = weight;
+	}
 }

@@ -27,6 +27,6 @@ public class QuestionAnswerEntity extends BaseEntity implements QuestionAnswerCo
 	@JsonView(QuestionAnswerView.class)
 	@ManyToOne
 	@JoinColumn(name = "question_id")
-	@Basic(fetch = FetchType.LAZY)
+//	@Basic(fetch = FetchType.LAZY)
 	public QuestionEntity question;
 }

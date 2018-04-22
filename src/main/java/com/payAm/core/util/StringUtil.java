@@ -24,6 +24,7 @@ public class StringUtil {
 	public static final String DASH = "-";
 	public static final String INVISIBLE_CONTROL = "\u0011"; // Can be used as delimiter or end-of-word in ChosenComboBox option titles.
 	public static final String COMMA_CONTROL = "," + INVISIBLE_CONTROL; // Can be used as delimiter in convertCollectionToString() and convertStringToStringSet|List() when we may have comma in some strings.
+	public static final String UNDER_LINE = "_";
 	public static final String NULL = "null";
 	public static final String PX = "px";
 

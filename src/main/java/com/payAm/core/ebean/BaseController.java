@@ -177,8 +177,15 @@ public abstract class BaseController<T extends BaseEntity, ID extends Serializab
     }
 
     private PageDto getPageDtoFromJson(Map<String, String> params) throws IOException {
-        String jsonString = params.keySet().stream().findFirst().get().length() > 0 ?
-                params.keySet().stream().findFirst().get() : "{}";
+        String jsonString = "{}";
+
+        try{
+            jsonString = params.keySet().stream().findFirst().get().length() > 0 ?
+                    params.keySet().stream().findFirst().get() : "{}";
+        }
+        catch (Exception e){
+
+        }
 
 //        ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(jsonString, PageDto.class);
