@@ -24,14 +24,17 @@ public class SalEntity extends BaseEntity implements SalConstants {
 
 	@JsonView({SalView.class, AssessmentSalView.class, QuestionHasSalView.class})
 	@Size(max = 45)
+	@Basic(fetch = FetchType.LAZY)
 	private String value;
 
 	@JsonView
-	@OneToMany(mappedBy = "sal", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "sal",fetch = FetchType.LAZY)
+	@Basic(fetch = FetchType.LAZY)
 	private List<AssessmentSalEntity> assessmentSals;
 
 	@JsonView
 	@OneToMany(mappedBy = "sal", fetch = FetchType.LAZY)
+	@Basic(fetch = FetchType.LAZY)
 //	@JsonIgnoreProperties
 	private List<QuestionHasSalEntity> questionHasSals;
 

@@ -17,31 +17,36 @@ public class QuestionHasSalEntity extends BaseEntity implements QuestionHasSalCo
 	@JsonView(QuestionHasSalView.class)
 	@ManyToOne
 	@JoinColumn(name = "sal_id")
+	@Basic(fetch = FetchType.LAZY)
 	public SalEntity sal;
 
 	@JsonView(QuestionHasSalView.class)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "metric_id")
 	public MetricEntity metric;
 
 	@JsonView(QuestionHasSalView.class)
 	@ManyToOne
 	@JoinColumn(name = "sub_metric_id")
+	@Basic(fetch = FetchType.LAZY)
 	public SubMetricEntity subMetric;
 
 	@JsonView(QuestionHasSalView.class)
 	@ManyToOne
 	@JoinColumn(name = "question_id")
+	@Basic(fetch = FetchType.LAZY)
 	public QuestionEntity question;
 
 	@JsonView(QuestionHasSalView.class)
 	@ManyToOne
 	@JoinColumn(name = "pre_question_id")
+	@Basic(fetch = FetchType.LAZY)
 	public PreQuestionEntity preQuestion;
 
 	@JsonView(QuestionHasSalView.class)
 	@ManyToOne
 	@JoinColumn(name = "standard_id")
+	@Basic(fetch = FetchType.LAZY)
 	public StandardEntity standard;
 
 	@JsonView(QuestionHasSalView.class)

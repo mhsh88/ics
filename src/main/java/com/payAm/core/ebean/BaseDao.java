@@ -6,25 +6,30 @@ package com.payAm.core.ebean;
 //import com.avaje.ebean.Junction;
 //import com.avaje.ebean.Query;
 //import com.avaje.ebean.text.PathProperties;
+import com.google.common.base.CaseFormat;
 import com.payAm.core.dto.FilterDto;
 import com.payAm.core.dto.PageDto;
 import com.payAm.core.dto.PaginationDto;
 import com.payAm.core.dto.SorterDto;
 import com.payAm.core.i18n.CoreMessagesCodes;
 import com.payAm.core.model.BaseEntity;
+import com.payAm.core.util.StringUtil;
+import org.hibernate.sql.Select;
 //import com.payAm.core.util.FilterOperatorUtil;
 //import com.payAm.core.util.StringUtil;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Selection;
+import javax.persistence.criteria.*;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static javafx.scene.input.KeyCode.T;
+import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
 
 
 public abstract class BaseDao<I extends Serializable, E extends BaseEntity> {
@@ -40,28 +45,17 @@ public abstract class BaseDao<I extends Serializable, E extends BaseEntity> {
         CriteriaQuery<E> queri = criteriaBuilder.createQuery(getEntityClass());
 
         Root<E> entityRoot = queri.from(getEntityClass());
-        queri.select(addPathProperties(entityRoot, page.getFetchFields()));
+
+        queri = addPathProperties(queri, entityRoot, page.getFetchFields());
 
         queri = filterResults(queri,criteriaBuilder, entityRoot,  page.getFilters());
 
         queri = resultOrder(queri,criteriaBuilder, entityRoot,page.getSort());
 
 
-//        Root<Country> c = q.from(Country.class);
-
-//        entityRoot = addPathProperties(entityRoot, page.getFetchFields());
-//        queri.select(addPathProperties(entityRoot, page.getFetchFields()));
-
-//        queri.select(criteriaBuilder.construct(getEntityClass(),
-//                entityRoot.get("name"), entityRoot.get("capital").get("name")));
-        Selection<E> add = queri.getSelection();
-//        queri.select(criteriaBuilder.construct(getEntityClass(),addPathProperties(entityRoot, page.getFetchFields()));
-
-
-        // TODO now we can add property and where
-        // Predicate p = cb.notEqual(e.type(), cb.literal(Country.class));
-
         TypedQuery<E> qry = entityManager.createQuery(queri);
+//        int sfa = qry.getMaxResults();
+//        qry.
         if (page.isEnablePaging()) {
             pageResult.setTotal(qry.getResultList().size());
         }
@@ -72,60 +66,68 @@ public abstract class BaseDao<I extends Serializable, E extends BaseEntity> {
         pageResult.setData(entities);
         pageResult.setMessage(CoreMessagesCodes.SUCCESSFUL_LOAD_MODELS);
         return pageResult;
-
-
-
-
-
-
-
-/*
-        try {
-
-            Query<E> query = addPathProperties(null, page.getFetchFields());
-            ExpressionList<E> expressionList = addWhereClauses(query.where(), page.getFetchFields(), page.getFilters(), page.getAdvancedFilter());
-            if (page.isEnablePaging()) {
-                pageResult.setTotal(expressionList.findRowCount());
-            }
-            if (page.isEnableSorting()) {
-                expressionList = addSortExpression(expressionList, page.getSort());
-            }
-            if (page.isEnablePaging())
-                query = addPagingExpression(expressionList, page.getPagination());
-
-//            pageResult.setData(entities);
-//            pageResult.setMessage(CoreMessagesCodes.SUCCESSFUL_LOAD_MODELS);
-        }
-        catch (Exception e) {
-            throw new Exception(CoreMessagesCodes.ERROR_LOAD_MODELS);
-        }
-        return pageResult;*/
     }
 
     private CriteriaQuery<E> filterResults(CriteriaQuery<E> queri, CriteriaBuilder criteriaBuilder, Root<E> entityRoot, List<FilterDto> filters) {
+        List<Predicate> predicates = new ArrayList<Predicate>();
         for(FilterDto filter : filters) {
             switch(filter.getOperator()){
                 case EQ:
                     if(filter.getField().equals("deleted"))
-                        queri.where(criteriaBuilder.equal(entityRoot.get(filter.getField()), Boolean.parseBoolean(filter.getValue())));
+                        predicates.add(criteriaBuilder.equal(entityRoot.get(filter.getField()), Boolean.parseBoolean(filter.getValue())));
+
                     else
-                        queri.where(criteriaBuilder.equal(entityRoot.get(filter.getField()), Boolean.parseBoolean(filter.getValue())));
+                        predicates.add(criteriaBuilder.equal(entityRoot.get(filter.getField()), Boolean.parseBoolean(filter.getValue())));
                     break;
                 case NE:
+                        predicates.add(criteriaBuilder.notEqual(entityRoot.get(filter.getField()), filter.getValue()));
+//                    cb.notEqual(area, areaParam)
                     break;
                 case GT:
+
+                    predicates.add(isCreatable(filter.getValue()) ?
+                            criteriaBuilder.gt(entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
+                            criteriaBuilder.greaterThan(entityRoot.get(filter.getField()), filter.getValue()));
+//                    cb.greaterThan(name, nameParam)
+//                    cb.gt(area, areaParam)
                     break;
                 case GE:
+//                    cb.greaterThanOrEqualTo(name, nameParam)
+//                    cb.ge(area, areaParam);
+                    predicates.add(isCreatable(filter.getValue()) ?
+                            criteriaBuilder.ge(entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
+                            criteriaBuilder.greaterThanOrEqualTo(entityRoot.get(filter.getField()), filter.getValue()));
                     break;
                 case LT:
+
+                    predicates.add(isCreatable(filter.getValue()) ?
+                            criteriaBuilder.lt(entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
+                            criteriaBuilder.lessThan(entityRoot.get(filter.getField()), filter.getValue()));
+//                    cb.lt(area, areaParam)
                     break;
                 case LE:
+//                    String field = filter.getField();
+//                    String value = filter.getValue();
+                    predicates.add(isCreatable(filter.getValue()) ?
+                            criteriaBuilder.le(entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
+                            criteriaBuilder.lessThanOrEqualTo(entityRoot.get(filter.getField()), filter.getValue()));
+//                    cb.le(area, areaParam)
                     break;
                 case IS_NULL:
+//                    cb.isNull(name)
                     break;
+
                 case IS_NOT_NULL:
+//                    cb.isNotNull(name)
                     break;
                 case LIKE:
+
+//                    Predicate l1 = cb.like(path, param);
+//                    Predicate l2 = cb.like(path, "a%");
+                    predicates.add(criteriaBuilder.like(entityRoot.get(filter.getField()), StringUtil.PERCENT + filter.getValue() + StringUtil.PERCENT));
+
+
+
                     break;
                 case STARTS_WITH:
                     break;
@@ -142,6 +144,7 @@ public abstract class BaseDao<I extends Serializable, E extends BaseEntity> {
                 case JSON_NOT_EXISTS:
                     break;
                 case AND:
+//                    and();
                     break;
                 case OR:
                     break;
@@ -152,7 +155,7 @@ public abstract class BaseDao<I extends Serializable, E extends BaseEntity> {
             }
 
         }
-        return queri;
+        return queri.where(predicates.toArray(new Predicate[]{}));
     }
 
     private CriteriaQuery<E> resultOrder(CriteriaQuery<E> queri, CriteriaBuilder criteriaBuilder, Root<E> entityRoot, SorterDto sort) {
@@ -172,61 +175,55 @@ public abstract class BaseDao<I extends Serializable, E extends BaseEntity> {
     }
 
 
-    private Root<E> addPathProperties(Root<E> entityRoot, List<String> fields) {
-
+    private CriteriaQuery<E> addPathProperties(CriteriaQuery<E> query, Root<E> entityRoot, List<String> fields) throws ClassNotFoundException {
+        List<Selection<?>> properties = new ArrayList<>();
+//        List<Path<Object>> adsf = fields.stream()
+//                .map(f -> entityRoot.get(f))
+//                .collect(Collectors.toList());
+        List<String> list = new ArrayList<>();
         for (String fullAssociationPath : fields) {
-           if (fullAssociationPath != null){
-               entityRoot.get(fullAssociationPath);
-           }
+
+            if(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_CAMEL, fullAssociationPath).equals(fullAssociationPath.toLowerCase())){
+
+                list.add(fullAssociationPath);
+
+            }
+            else {
+                String str = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, fullAssociationPath);
+                String temp = str.substring(0,str.length()-1) + "Entity";
+//                Class<?> cls = Class.forName(temp);
+            }
+//            list.add(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_CAMEL, fullAssociationPath));
+//            list.add(CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, fullAssociationPath));
+
         }
-      /*  PathProperties pathProperties = new PathProperties();
+        return query.multiselect(list.stream()
+                .map(f -> entityRoot.get(f))
+                .collect(Collectors.toList()));
+        
+        
 //
-            if (fullAssociationPath.contains(StringUtil.DOT)) {
-                String path = fullAssociationPath.substring(0, fullAssociationPath.lastIndexOf('.'));
-                String property = fullAssociationPath.substring(fullAssociationPath.lastIndexOf('.') + 1);
-                pathProperties.addToPath(path, property);
-            }
-            else pathProperties.addToPath(null, fullAssociationPath);
-        }*/
-        /*query.apply(pathProperties);*/
-        return entityRoot;
+  
+//
+//               if (fullAssociationPath.contains(StringUtil.DOT)) {
+//                   String path = fullAssociationPath.substring(0, fullAssociationPath.lastIndexOf('.'));
+//                   String property = fullAssociationPath.substring(fullAssociationPath.lastIndexOf('.') + 1);
+////                   pathProperties.addToPath(path, property);
+//               }
+//               else {
+//                    cq.multiselect(this.fields.stream()
+//                           .map(f -> root.get(f.getName()))
+//                           .collect(Collectors.toList()));
+//                   properties.add(entityRoot.get(fullAssociationPath));
+//               }
+//
+//
+//        }
+//        return query.multiselect(properties);
+
     }
 
 
-    /**
-     * can be overriden in the sub class repositories
-     * Note that in overriden method always call super.addWhereClauses() method for doing common works.
-     * **/
-    /*protected ExpressionList<E> addWhereClauses(ExpressionList<E> where, List<String> fields, List<FilterDto> filters, Boolean advancedFilter) {
-
-        Junction<E> junction;
-
-        if (advancedFilter) {
-            junction = where.conjunction();
-            for (FilterDto filter : filters) {
-                junction = FilterOperatorUtil.addRestriction(junction, filter);
-            }
-        } else {
-            junction = where.disjunction();
-            FilterDto filter = filters.stream().filter(fltr -> QUERY.equals(fltr.getField())).findFirst().get();
-            for (String field : fields) {
-                junction.add(Expr.ilike(field, StringUtil.PERCENT + filter.getValue() + StringUtil.PERCENT));
-            }
-        }
-
-        return junction.endJunction();
-    }*/
-
-  /*  private ExpressionList<E> addSortExpression(ExpressionList<E> expressionList, SorterDto sorter) {
-        expressionList.order(sorter.getField() + " " + sorter.getOrder());
-        return expressionList;
-    }
-
-    private Query<E> addPagingExpression(ExpressionList<E> expressionList, PaginationDto pagination) {
-        return expressionList
-                .setFirstRow((pagination.getPageNumber() - 1) * pagination.getPageSize())
-                .setMaxRows((pagination.getPageNumber() * pagination.getPageSize()) - 1);
-    }*/
 
 
     private Class<E> getEntityClass() {

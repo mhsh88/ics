@@ -30,6 +30,7 @@ public class OrganizationAssessmentEntity extends BaseEntity implements Organiza
 	@JsonView(OrganizationAssessmentView.class)
 	@ManyToOne
 	@JoinColumn(name = "assessment_sal_id")
+	@Basic(fetch = FetchType.LAZY)
 	public AssessmentSalEntity assessmentSal;
 
 	@JsonView
@@ -39,6 +40,7 @@ public class OrganizationAssessmentEntity extends BaseEntity implements Organiza
 			joinColumns = {@JoinColumn(name = "organization_assessment_id", nullable = false)},
 			inverseJoinColumns = {@JoinColumn(name = "standard_id", nullable = false)}
 	)
+	@Basic(fetch = FetchType.LAZY)
 	public List<StandardEntity> standards;
 
 	@JsonView(OrganizationAssessmentView.class)

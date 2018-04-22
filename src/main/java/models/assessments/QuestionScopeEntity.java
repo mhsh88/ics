@@ -6,10 +6,7 @@ import constants.assessments.QuestionScopeConstants;
 import dtos.assessments.QuestionScopeView;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 import java.util.List;
 
@@ -25,5 +22,6 @@ public class QuestionScopeEntity extends BaseEntity implements QuestionScopeCons
 
     @JsonView
     @ManyToMany(mappedBy = "questionScopes")
+    @Basic(fetch = FetchType.LAZY)
     public List<QuestionEntity> questions;
 }

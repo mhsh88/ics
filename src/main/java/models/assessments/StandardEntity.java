@@ -22,9 +22,11 @@ public class StandardEntity extends BaseEntity implements StandardConstants {
 
 	@JsonView
 	@ManyToMany(mappedBy = "standards")
+	@Basic(fetch = FetchType.LAZY)
 	public List<OrganizationAssessmentEntity> organizationAssessments;
 
 	@JsonView
 	@OneToMany(mappedBy = "standard")
+	@Basic(fetch = FetchType.LAZY)
 	public List<QuestionHasSalEntity> questionHasSals;
 }

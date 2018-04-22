@@ -16,7 +16,7 @@ import java.io.Serializable;
 //@EntityListeners({AuditingEntityListener.class})
 
 @MappedSuperclass
-//@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class BaseEntity <I extends Serializable> implements BaseConstants, BaseModel  {
 
     @JsonView(BaseView.class)
@@ -27,7 +27,23 @@ public abstract class BaseEntity <I extends Serializable> implements BaseConstan
     @JsonView(BaseView.class)
     public Boolean deleted = false;
 
-//    public abstract E insert();
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    //    public abstract E insert();
 //    public abstract E update();
 //    public abstract E byId(I id);
 

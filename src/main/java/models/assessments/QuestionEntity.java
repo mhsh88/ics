@@ -18,6 +18,7 @@ public class QuestionEntity extends BaseEntity implements QuestionConstants {
 
 	@JsonView
 	@OneToMany(mappedBy = "question")
+	@Basic(fetch = FetchType.LAZY)
 	public List<QuestionHasSalEntity> questionHasSals;
 
 	@JsonView
@@ -27,6 +28,7 @@ public class QuestionEntity extends BaseEntity implements QuestionConstants {
 			joinColumns={@JoinColumn(name="question_id", nullable=false)},
 			inverseJoinColumns={@JoinColumn(name="scope_id", nullable=false)}
 	)
+	@Basic(fetch = FetchType.LAZY)
 	public List<QuestionScopeEntity> questionScopes;
 
 	@JsonView({QuestionView.class, QuestionHasSalView.class})
@@ -35,5 +37,6 @@ public class QuestionEntity extends BaseEntity implements QuestionConstants {
 
 	@JsonView
 	@OneToMany(mappedBy = "question")
+	@Basic(fetch = FetchType.LAZY)
 	public List<QuestionAnswerEntity> questionAnswers;
 }

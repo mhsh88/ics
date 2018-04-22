@@ -22,5 +22,6 @@ public class SubMetricEntity extends BaseEntity implements SubMetricConstants {
 
     @JsonView
     @OneToMany(mappedBy = "metric")
+    @Basic(fetch = FetchType.LAZY)
     public List<QuestionHasSalEntity> questionHasSals;
 }

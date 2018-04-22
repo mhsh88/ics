@@ -22,9 +22,11 @@ public class PreQuestionEntity extends BaseEntity implements PreQuestionConstant
 
 	@JsonView
 	@OneToMany(mappedBy = "preQuestion")
+	@Basic(fetch = FetchType.LAZY)
 	public List<QuestionHasSalEntity> questionHasSals;
 
 	@JsonView
 	@OneToMany(mappedBy = "preQuestion")
+	@Basic(fetch = FetchType.LAZY)
 	public List<PreQuestionAnswerEntity> preQuestionAnswers;
 }
