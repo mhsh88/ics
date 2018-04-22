@@ -12,5 +12,5 @@ import javax.inject.Singleton;
  */
 
 @Singleton
-public class PermissionDao extends BaseDao<Long, PermissionEntity> {
+public class PermissionDao extends BaseDao<PermissionEntity, Long> {
 }

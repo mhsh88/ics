@@ -12,5 +12,5 @@ import javax.inject.Singleton;
  */
 
 @Singleton
-public class SalDao extends BaseDao<Long, SalEntity> {
+public class SalDao extends BaseDao<SalEntity, Long> {
 }

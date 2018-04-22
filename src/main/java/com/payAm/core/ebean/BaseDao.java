@@ -7,6 +7,7 @@ package com.payAm.core.ebean;
 //import com.avaje.ebean.Query;
 //import com.avaje.ebean.text.PathProperties;
 
+import com.mysema.query.BooleanBuilder;
 import com.payAm.core.dto.FilterDto;
 import com.payAm.core.dto.PageDto;
 import com.payAm.core.dto.PaginationDto;
@@ -14,6 +15,12 @@ import com.payAm.core.dto.SorterDto;
 import com.payAm.core.i18n.CoreMessagesCodes;
 import com.payAm.core.model.BaseEntity;
 import com.payAm.core.util.StringUtil;
+import javafx.animation.PathTransitionBuilder;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.support.QueryDslJpaRepository;
+import org.springframework.data.repository.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -30,19 +37,51 @@ import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
 //import com.payAm.core.util.StringUtil;
 
 
-public abstract class BaseDao<I extends Serializable, E extends BaseEntity> {
+public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> implements Repository<BaseEntity, Serializable> {
 
+    private static final PathTransitionBuilder Expressions = ;
     @PersistenceContext
     EntityManager entityManager;
 
 
-    public PageResult<E> find(PageDto page) throws Exception {
-        PageResult<E> pageResult = new PageResult<>();
+    public List<T> getModels(PageDto page) throws Exception{
+//        List<Filter> filters, Sorter sorter, int page, int limit, boolean isOr
+        Sort sort;
+        if (page.getSort().getOrder() == null)
+            sort = new Sort(new Sort.Order(Sort.Direction.ASC, page.getFetchFields().get(1)), new Sort.Order(Sort.Direction.ASC, page.getFetchFields().get(0)));
+        else
+            sort = new Sort(page.getSort().getOrder().toLowerCase().equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, page.getSort().getField());
+
+        Pageable pageSpecification = new PageRequest(page.getPagination().getPageNumber() - 1, page.getPagination().getPageSize(), sort);
+
+        BooleanBuilder predicate = new BooleanBuilder();
+        Path<T> model = Expressions.path(Employee.class, "employee");
+
+        Path<Boolean> deleted = Expressions.path(Boolean.class, model, "deleted");
+        Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
+
+        if (filters != null)
+            for (Filter filter : filters) {
+                Path<String> field = Expressions.path(String.class, employee, filter.getField());
+                Constant<String> value = (Constant<String>) Expressions.constant(filter.getValue());
+                if (isOr) predicate.or(Expressions.predicate(filter.getOps(), field, value));
+                else predicate.and(Expressions.predicate(filter.getOps(), field, value));
+            }
+
+        predicate.and(Expressions.predicate(Ops.EQ, deleted, falseValue));
+
+        return repository.findAll(predicate, pageSpecification).getContent();
+    }
+
+
+
+    public PageResult<T> findData(PageDto page) throws Exception {
+        PageResult<T> pageResult = new PageResult<>();
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
-        CriteriaQuery<E> queri = criteriaBuilder.createQuery(getEntityClass());
+        CriteriaQuery<T> queri = criteriaBuilder.createQuery(getEntityClass());
 
-        Root<E> entityRoot = queri.from(getEntityClass());
+        Root<T> entityRoot = queri.from(getEntityClass());
 
         queri = addPathProperties(queri, entityRoot, page.getFetchFields());
 
@@ -51,7 +90,7 @@ public abstract class BaseDao<I extends Serializable, E extends BaseEntity> {
         queri = resultOrder(queri, criteriaBuilder, entityRoot, page.getSort());
 
 
-        TypedQuery<E> qry = entityManager.createQuery(queri);
+        TypedQuery<T> qry = entityManager.createQuery(queri);
 //        int sfa = qry.getMaxResults();
 //        qry.
         if (page.isEnablePaging()) {
@@ -60,13 +99,13 @@ public abstract class BaseDao<I extends Serializable, E extends BaseEntity> {
         qry = addPagination(qry, page.getPagination());
 
 
-        List<E> entities = qry.getResultList();
+        List<T> entities = qry.getResultList();
         pageResult.setData(entities);
         pageResult.setMessage(CoreMessagesCodes.SUCCESSFUL_LOAD_MODELS);
         return pageResult;
     }
 
-    private CriteriaQuery<E> filterResults(CriteriaQuery<E> queri, CriteriaBuilder criteriaBuilder, Root<E> entityRoot, List<FilterDto> filters) {
+    private CriteriaQuery<T> filterResults(CriteriaQuery<T> queri, CriteriaBuilder criteriaBuilder, Root<T> entityRoot, List<FilterDto> filters) {
         List<Predicate> predicates = new ArrayList<Predicate>();
         for (FilterDto filter : filters) {
 
@@ -169,7 +208,7 @@ public abstract class BaseDao<I extends Serializable, E extends BaseEntity> {
         return field;
     }
 
-    private CriteriaQuery<E> resultOrder(CriteriaQuery<E> queri, CriteriaBuilder criteriaBuilder, Root<E> entityRoot, SorterDto sort) {
+    private CriteriaQuery<T> resultOrder(CriteriaQuery<T> queri, CriteriaBuilder criteriaBuilder, Root<T> entityRoot, SorterDto sort) {
 //        if(sort.getOrder().equals())
         return sort.getOrder().equals("ASC") ?
                 queri.orderBy(criteriaBuilder.asc(entityRoot.get(sort.getField()))) :
@@ -177,7 +216,7 @@ public abstract class BaseDao<I extends Serializable, E extends BaseEntity> {
 
     }
 
-    private TypedQuery<E> addPagination(TypedQuery<E> qry, PaginationDto pagination) {
+    private TypedQuery<T> addPagination(TypedQuery<T> qry, PaginationDto pagination) {
 //        pagination.getPageNumber();
 
         return qry.setFirstResult((pagination.getPageNumber() - 1) * pagination.getPageSize())
@@ -186,7 +225,7 @@ public abstract class BaseDao<I extends Serializable, E extends BaseEntity> {
     }
 
 
-    private CriteriaQuery<E> addPathProperties(CriteriaQuery<E> query, Root<E> entityRoot, List<String> fields) throws ClassNotFoundException {
+    private CriteriaQuery<T> addPathProperties(CriteriaQuery<T> query, Root<T> entityRoot, List<String> fields) throws ClassNotFoundException {
         List<Selection<?>> properties = new ArrayList<>();
         return query;
 //        List<Path<Object>> adsf = fields.stream()
@@ -240,11 +279,11 @@ public abstract class BaseDao<I extends Serializable, E extends BaseEntity> {
     }
 
 
-    private Class<E> getEntityClass() {
+    private Class<T> getEntityClass() {
         Class<?> clazz = getClass();
         while (clazz.getGenericSuperclass() != null) {
             if (clazz.getGenericSuperclass() instanceof ParameterizedType) {
-                return (Class<E>) ((ParameterizedType) clazz.getGenericSuperclass()).getActualTypeArguments()[1];
+                return (Class<T>) ((ParameterizedType) clazz.getGenericSuperclass()).getActualTypeArguments()[0];
             } else {
                 clazz = clazz.getSuperclass();
             }

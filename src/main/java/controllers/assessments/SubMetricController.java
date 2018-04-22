@@ -36,7 +36,7 @@ public class SubMetricController extends BaseController<SubMetricEntity, Long, S
     private SubMetricDao dao;
 
     @Override
-    public BaseDao<Long, SubMetricEntity> getDao() {
+    public BaseDao<SubMetricEntity,Long> getDao() {
         return dao;
     }
 }

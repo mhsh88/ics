@@ -25,8 +25,8 @@ public class DatabaseQuestionController extends BaseController<DatabaseQuestionE
 //    PUT     /databasequestions                            controllers.assessments.DatabaseQuestionController.insert()
 //    POST    /databasequestions                            controllers.assessments.DatabaseQuestionController.update()
 //    DELETE  /databasequestions/:id                        controllers.assessments.DatabaseQuestionController.delete(id: Long)
-            @Autowired
-            public DatabaseQuestionController(DatabaseQuestionRepository repo) {
+    @Autowired
+    public DatabaseQuestionController(DatabaseQuestionRepository repo) {
                 super((CrudRepository) repo);
             }
 
@@ -34,7 +34,7 @@ public class DatabaseQuestionController extends BaseController<DatabaseQuestionE
     private DatabaseQuestionDao dao;
 
     @Override
-    public BaseDao<Long, DatabaseQuestionEntity> getDao() {
+    public BaseDao<DatabaseQuestionEntity,Long> getDao() {
         return dao;
     }
 }

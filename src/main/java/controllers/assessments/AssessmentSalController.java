@@ -36,7 +36,7 @@ public class AssessmentSalController extends BaseController<AssessmentSalEntity,
     private AssessmentSalDao dao;
 
     @Override
-    public BaseDao<Long, AssessmentSalEntity> getDao() {
+    public BaseDao<AssessmentSalEntity, Long> getDao() {
         return dao;
     }
 

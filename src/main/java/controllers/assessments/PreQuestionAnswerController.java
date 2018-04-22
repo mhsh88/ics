@@ -34,7 +34,7 @@ public class PreQuestionAnswerController extends BaseController<PreQuestionAnswe
     private PreQuestionAnswerDao dao;
 
     @Override
-    public BaseDao<Long, PreQuestionAnswerEntity> getDao() {
+    public BaseDao<PreQuestionAnswerEntity,Long> getDao() {
         return dao;
     }
 }

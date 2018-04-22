@@ -18,7 +18,7 @@ import javax.inject.Singleton;
  */
 
 @Singleton
-public class TokenActionDao extends BaseDao<Long, TokenActionEntity> {
+public class TokenActionDao extends BaseDao<TokenActionEntity, Long> {
 //
 //    public TokenActionEntity findByToken(final String token, final ActionTokenType type) {
 //        return super.where()

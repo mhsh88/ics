@@ -12,5 +12,5 @@ import javax.inject.Singleton;
  */
 
 @Singleton
-public class PreQuestionAnswerDao extends BaseDao<Long, PreQuestionAnswerEntity> {
+public class PreQuestionAnswerDao extends BaseDao<PreQuestionAnswerEntity,Long> {
 }

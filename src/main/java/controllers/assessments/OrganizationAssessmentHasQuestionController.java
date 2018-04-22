@@ -35,7 +35,7 @@ public class OrganizationAssessmentHasQuestionController extends BaseController<
     private OrganizationAssessmentHasQuestionDao dao;
 
     @Override
-    public BaseDao<Long, OrganizationAssessmentHasQuestionEntity> getDao() {
+    public BaseDao<OrganizationAssessmentHasQuestionEntity,Long> getDao() {
         return dao;
     }
 }

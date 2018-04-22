@@ -12,5 +12,5 @@ import javax.inject.Singleton;
  */
 
 @Singleton
-public class SubMetricDao extends BaseDao<Long, SubMetricEntity> {
+public class SubMetricDao extends BaseDao<SubMetricEntity,Long> {
 }

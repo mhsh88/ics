@@ -38,7 +38,7 @@ public class QuestionScopeController  extends BaseController<QuestionScopeEntity
     private QuestionScopeDao dao;
 
     @Override
-    public BaseDao<Long, QuestionScopeEntity> getDao() {
+    public BaseDao<QuestionScopeEntity,Long> getDao() {
         return dao;
     }
 

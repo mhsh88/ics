@@ -38,7 +38,7 @@ public class SalController extends BaseController<SalEntity, Long, SalView>{
     private SalDao dao;
 
     @Override
-    public BaseDao<Long, SalEntity> getDao() {
+    public BaseDao<SalEntity,Long> getDao() {
         return dao;
     }
 

@@ -36,7 +36,7 @@ public class StandardController  extends BaseController<StandardEntity, Long, St
     private StandardDao dao;
 
     @Override
-    public BaseDao<Long, StandardEntity> getDao() {
+    public BaseDao<StandardEntity,Long> getDao() {
         return dao;
     }
 }

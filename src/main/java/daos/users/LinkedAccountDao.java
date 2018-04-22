@@ -13,7 +13,7 @@ import javax.inject.Singleton;
  */
 
 @Singleton
-public class LinkedAccountDao extends BaseDao<Long, LinkedAccountEntity> {
+public class LinkedAccountDao extends BaseDao<LinkedAccountEntity, Long> {
 
 //    public LinkedAccountEntity findByProviderKey(final String username, String key) {
 //        return super.where()

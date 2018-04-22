@@ -36,7 +36,7 @@ public class MetricController extends BaseController<MetricEntity, Long, MetricV
     private MetricDao dao;
 
     @Override
-    public BaseDao<Long, MetricEntity> getDao() {
+    public BaseDao<MetricEntity,Long> getDao() {
         return dao;
     }
 

@@ -35,7 +35,7 @@ public class PreQuestionController extends BaseController<PreQuestionEntity, Lon
     private PreQuestionDao dao;
 
     @Override
-    public BaseDao<Long, PreQuestionEntity> getDao() {
+    public BaseDao<PreQuestionEntity,Long> getDao() {
         return dao;
     }
 }

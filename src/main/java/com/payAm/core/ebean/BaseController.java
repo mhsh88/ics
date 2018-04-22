@@ -43,7 +43,7 @@ public abstract class BaseController<T extends BaseEntity, ID extends Serializab
     @PersistenceContext
     EntityManager entityManager;
 
-    public abstract BaseDao<ID, T> getDao();
+    public abstract BaseDao< T, ID> getDao();
 
 
     public BaseController(CrudRepository<T, ID> repo) {
@@ -283,34 +283,8 @@ public abstract class BaseController<T extends BaseEntity, ID extends Serializab
         return null;
     }
 
-//    protected String writeJson(PageResult<T> pageResult) throws JsonProcessingException {
-//        return Json.mapper().writerWithView(getViewClass()).writeValueAsString(pageResult);
-//    }
-//
-//    protected T readJson(JsonNode jsonNode) throws java.io.IOException {
-//        return Json.mapper().readerWithView(getViewClass()).forType(getModelClass()).readValue(jsonNode);
-//    }
-
-
-    private List<T> getdata(PageDto page){
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<T> query = criteriaBuilder.createQuery(getModelClass());
-        Class<T> clasz = getModelClass();
-        Root<T> entityRoot = query.from(getModelClass());
-        query.select(entityRoot)/*.from(getModelClass())*/;
-        Selection<T> selection;
-//        selection.alias()
-
-        // TODO now we can add property and where
-        // Predicate p = cb.notEqual(e.type(), cb.literal(Country.class));
-
-        TypedQuery<T> qry = entityManager.createQuery(query);
-
-        List<T> entities = qry.getResultList();
-        return entities;
-    }
 
     protected PageResult<T> find(PageDto page) throws Exception {
-        return getDao().find(page);
+        return getDao().findData(page);
     }
 }

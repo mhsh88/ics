@@ -12,6 +12,6 @@ import javax.inject.Singleton;
  */
 
 @Singleton
-public class StandardDao extends BaseDao<Long, StandardEntity> {
+public class StandardDao extends BaseDao<StandardEntity,Long> {
 
 }

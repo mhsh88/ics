@@ -35,7 +35,7 @@ public class QuestionController extends BaseController<QuestionEntity, Long, Que
     private QuestionDao dao;
 
     @Override
-    public BaseDao<Long, QuestionEntity> getDao() {
+    public BaseDao<QuestionEntity,Long> getDao() {
         return dao;
     }
 

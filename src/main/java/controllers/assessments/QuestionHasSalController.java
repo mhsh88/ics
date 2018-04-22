@@ -38,7 +38,7 @@ public class QuestionHasSalController extends BaseController<QuestionHasSalEntit
     private QuestionHasSalDao dao;
 
     @Override
-    public BaseDao<Long, QuestionHasSalEntity> getDao() {
+    public BaseDao<QuestionHasSalEntity,Long> getDao() {
         return dao;
     }
 
