@@ -8,6 +8,10 @@ package com.payAm.core.ebean;
 //import com.avaje.ebean.text.PathProperties;
 
 import com.mysema.query.BooleanBuilder;
+import com.mysema.query.types.Constant;
+import com.mysema.query.types.Ops;
+import com.mysema.query.support.Expressions;
+import com.mysema.query.types.path.SimplePath;
 import com.payAm.core.dto.FilterDto;
 import com.payAm.core.dto.PageDto;
 import com.payAm.core.dto.PaginationDto;
@@ -39,7 +43,7 @@ import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
 
 public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> implements Repository<BaseEntity, Serializable> {
 
-    private static final PathTransitionBuilder Expressions = ;
+
     @PersistenceContext
     EntityManager entityManager;
 
@@ -55,17 +59,17 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> imp
         Pageable pageSpecification = new PageRequest(page.getPagination().getPageNumber() - 1, page.getPagination().getPageSize(), sort);
 
         BooleanBuilder predicate = new BooleanBuilder();
-        Path<T> model = Expressions.path(Employee.class, "employee");
+        SimplePath<T> model = Expressions.path(getEntityClass(), "lhgl");
 
-        Path<Boolean> deleted = Expressions.path(Boolean.class, model, "deleted");
+        SimplePath<Boolean> deleted = Expressions.path(Boolean.class, (com.mysema.query.types.Path<?>) model, BaseEntity.DELETED);
         Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
 
-        if (filters != null)
-            for (Filter filter : filters) {
-                Path<String> field = Expressions.path(String.class, employee, filter.getField());
+        if (page.getFilters() != null)
+            for (FilterDto filter : page.getFilters()) {
+                SimplePath<String> field = Expressions.path(String.class, model, filter.getField());
                 Constant<String> value = (Constant<String>) Expressions.constant(filter.getValue());
-                if (isOr) predicate.or(Expressions.predicate(filter.getOps(), field, value));
-                else predicate.and(Expressions.predicate(filter.getOps(), field, value));
+                if (page.getAdvancedFilter()) predicate.or(Expressions.predicate(filter.getOperator().getCode(), field, value));
+                else predicate.and(Expressions.predicate(filter.getOperator(), field, value));
             }
 
         predicate.and(Expressions.predicate(Ops.EQ, deleted, falseValue));
