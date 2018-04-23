@@ -18,17 +18,24 @@ import com.payAm.core.dto.PaginationDto;
 import com.payAm.core.dto.SorterDto;
 import com.payAm.core.i18n.CoreMessagesCodes;
 import com.payAm.core.model.BaseEntity;
+import com.payAm.core.model.QBaseEntity;
 import com.payAm.core.util.StringUtil;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import javafx.animation.PathTransitionBuilder;
+import models.assessments.QSalEntity;
+import models.assessments.QSubMetricEntity;
+import models.assessments.SubMetricEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.QueryDslJpaRepository;
 import org.springframework.data.repository.Repository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import javax.persistence.criteria.*;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
@@ -40,71 +47,104 @@ import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
 //import com.payAm.core.util.FilterOperatorUtil;
 //import com.payAm.core.util.StringUtil;
 
+//@org.springframework.stereotype.Repository
+//@Transactional
 
-public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> implements Repository<BaseEntity, Serializable> {
-
+@Primary
+public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
 
     @PersistenceContext
     EntityManager entityManager;
 
 
+    private QueryDslJpaRepository<T, ID> repository;
+
+
     public List<T> getModels(PageDto page) throws Exception{
+
+
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        QSubMetricEntity qSubMetricEntity = QSubMetricEntity.subMetricEntity;
+        List<SubMetricEntity> sd = queryFactory.selectFrom(qSubMetricEntity).fetch();
+
+        return (List<T>) sd;
+
+
+//        Class<?> asdf = Class.forName("Q" + getEntityClass().getSimpleName().toString(), true, ClassLoader.getSystemClassLoader());
+
+//        new QBaseEntity("baseEntity");
+//        List<T> c = queryFactory.selectFrom(getEntityClass())
+//                .orderBy(user.login.asc())
+//                .fetch();
+
+//        QBaseEntity qBaseEntity = getQtypeOfEntity();
 //        List<Filter> filters, Sorter sorter, int page, int limit, boolean isOr
-        Sort sort;
-        if (page.getSort().getOrder() == null)
-            sort = new Sort(new Sort.Order(Sort.Direction.ASC, page.getFetchFields().get(1)), new Sort.Order(Sort.Direction.ASC, page.getFetchFields().get(0)));
-        else
-            sort = new Sort(page.getSort().getOrder().toLowerCase().equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, page.getSort().getField());
+//        System.out.println("Q"+getEntityClass().getSimpleName().toString()+StringUtil.DOT+getEntityClass().getSimpleName().toString().toLowerCase());
+//        Class.forName("Q"+getEntityClass().getSimpleName().toString()+StringUtil.DOT+getEntityClass().getSimpleName().toString().toLowerCase());
+//        T model = Class.forName("Q"+getEntityClass().getSimpleName().toString()+StringUtil.DOT+getEntityClass().getSimpleName().toString().toLowerCase(), true,)
+//        QBaseEntity model = QBaseEntity.baseEntity;
+//        BaseEntity baseEntity= queryFactory.selec
+//        List<T> c = queryFactory.selectFrom(user)
+//                .orderBy(user.login.asc())
+//                .fetch();
+//        Sort sort;
+//        if (page.getSort().getOrder() == null)
+//            sort = new Sort(new Sort.Order(Sort.Direction.ASC, page.getFetchFields().get(1)), new Sort.Order(Sort.Direction.ASC, page.getFetchFields().get(0)));
+//        else
+//            sort = new Sort(page.getSort().getOrder().toLowerCase().equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, page.getSort().getField());
+//
+//        Pageable pageSpecification = new PageRequest(page.getPagination().getPageNumber() - 1, page.getPagination().getPageSize(), sort);
+//
+//        BooleanBuilder predicate = new BooleanBuilder();
+//        Path<T> model = Expressions.path(Class.forName(getEntityClass()), "*");
+//
+//        SimplePath<Boolean> deleted = Expressions.path(Boolean.class, (com.mysema.query.types.Path<?>) model, BaseEntity.DELETED);
+//        Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
+//
+//        if (page.getFilters() != null)
+//            for (FilterDto filter : page.getFilters()) {
+//                SimplePath<String> field = Expressions.path(String.class, model, filter.getField());
+//                Constant<String> value = (Constant<String>) Expressions.constant(filter.getValue());
+////                if (page.getAdvancedFilter()) predicate.or(Expressions.predicate(filter.getOperator().getCode(), field, value));
+////                else predicate.and(Expressions.predicate(filter.getOperator(), field, value));
+//            }
+//
+//        predicate.and(Expressions.predicate(Ops.EQ, deleted, falseValue));
 
-        Pageable pageSpecification = new PageRequest(page.getPagination().getPageNumber() - 1, page.getPagination().getPageSize(), sort);
-
-        BooleanBuilder predicate = new BooleanBuilder();
-        SimplePath<T> model = Expressions.path(getEntityClass(), "lhgl");
-
-        SimplePath<Boolean> deleted = Expressions.path(Boolean.class, (com.mysema.query.types.Path<?>) model, BaseEntity.DELETED);
-        Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
-
-        if (page.getFilters() != null)
-            for (FilterDto filter : page.getFilters()) {
-                SimplePath<String> field = Expressions.path(String.class, model, filter.getField());
-                Constant<String> value = (Constant<String>) Expressions.constant(filter.getValue());
-                if (page.getAdvancedFilter()) predicate.or(Expressions.predicate(filter.getOperator().getCode(), field, value));
-                else predicate.and(Expressions.predicate(filter.getOperator(), field, value));
-            }
-
-        predicate.and(Expressions.predicate(Ops.EQ, deleted, falseValue));
-
-        return repository.findAll(predicate, pageSpecification).getContent();
+//        return repository.findAll();//predicate, pageSpecification).getContent();
     }
 
 
 
     public PageResult<T> findData(PageDto page) throws Exception {
+        List<T> lsit =  getModels(page);
         PageResult<T> pageResult = new PageResult<>();
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-
-        CriteriaQuery<T> queri = criteriaBuilder.createQuery(getEntityClass());
-
-        Root<T> entityRoot = queri.from(getEntityClass());
-
-        queri = addPathProperties(queri, entityRoot, page.getFetchFields());
-
-        queri = filterResults(queri, criteriaBuilder, entityRoot, page.getFilters());
-
-        queri = resultOrder(queri, criteriaBuilder, entityRoot, page.getSort());
-
-
-        TypedQuery<T> qry = entityManager.createQuery(queri);
-//        int sfa = qry.getMaxResults();
-//        qry.
-        if (page.isEnablePaging()) {
-            pageResult.setTotal(qry.getResultList().size());
-        }
-        qry = addPagination(qry, page.getPagination());
-
-
-        List<T> entities = qry.getResultList();
-        pageResult.setData(entities);
+        pageResult.setData(lsit);
+//        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+//
+//        CriteriaQuery<T> queri = criteriaBuilder.createQuery(getEntityClass());
+//
+//        Root<T> entityRoot = queri.from(getEntityClass());
+//
+//        queri = addPathProperties(queri, entityRoot, page.getFetchFields());
+//
+//        queri = filterResults(queri, criteriaBuilder, entityRoot, page.getFilters());
+//
+//        queri = resultOrder(queri, criteriaBuilder, entityRoot, page.getSort());
+//
+//
+//        TypedQuery<T> qry = entityManager.createQuery(queri);
+////        int sfa = qry.getMaxResults();
+////        qry.
+//        if (page.isEnablePaging()) {
+//            pageResult.setTotal(qry.getResultList().size());
+//        }
+//        qry = addPagination(qry, page.getPagination());
+//
+//
+//        List<T> entities = qry.getResultList();
+//        pageResult.setData(entities);
         pageResult.setMessage(CoreMessagesCodes.SUCCESSFUL_LOAD_MODELS);
         return pageResult;
     }

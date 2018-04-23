@@ -17,8 +17,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @EnableJpaAuditing
 @PropertySource("application.properties")
 @ComponentScan(basePackages = {"com", "controllers","com.payAm.core.model","config"})
-@EntityScan(basePackages ={"com.*","controllers.*","models.*","repositories.*","service.*","com.payAm.core.model.*","daos.*","config"},basePackageClasses = BaseEntity.class) //{"models"},basePackageClasses = BaseEntity.class)
-@EnableJpaRepositories(basePackages = {"com.*","controllers.*","models.*", "repositories.*","service.*","daos.*","config"})//basePackageClasses = {BaseDAORepository.class, BaseService.class})
+@EntityScan(basePackages ={"com.*","controllers.*","models.*","repositories.*","service.*","com.payAm.core.model.*","daos.*","config"},basePackageClasses = BaseEntity.class)
+@EnableJpaRepositories(basePackages = {"com.*","controllers.*","models.*", "repositories.*","service.*","daos.*","config"}/*, entityManagerFactoryRef="emf"*/)
 public class ICSApplication {
     public static void main (String[] args){
 

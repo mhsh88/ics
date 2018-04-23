@@ -1,12 +1,19 @@
 package config;
 
 import daos.assessments.*;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.support.QueryDslJpaRepository;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceContext;
 
 @Lazy
 @Configuration
@@ -24,7 +31,14 @@ public class AppConfig {
             }
         };
     }
+
+//    @Bean
+//    public QueryDslJpaRepository queryDslJpaRepository(){
+////        QueryDslJpaRepository repository;
+//        return QueryDslJpaRepository;
+//    }
     @Bean
+    @Primary
     public AssessmentSalDao assessmentSalDaoBean(){
         return new AssessmentSalDao();
     }
@@ -81,5 +95,12 @@ public class AppConfig {
     public SubMetricDao subMetricDao(){
         return new SubMetricDao();
     }
+//    @Bean
+//    public FactoryBean<EntityManagerFactory> entityManagerFactory() {
+//
+//
+//        entityManagerFactoryBean.setJpaProperties(props);
+//        return entityManagerFactoryBean;
+//    }
 
 }
