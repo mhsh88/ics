@@ -166,8 +166,23 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
 
     private CriteriaQuery<T> filterResults(CriteriaQuery<T> queri, CriteriaBuilder criteriaBuilder, Root<T> entityRoot, List<FilterDto> filters) {
         List<javax.persistence.criteria.Predicate> predicates = new ArrayList<>();
-        javax.persistence.criteria.Path<Object> pathRoot;
+        Expression<T> pathRoot;
+        Boolean dotChecher = false;
+
         for (FilterDto filter : filters) {
+            dotChecher = false;
+            String path = filter.getField();
+            String property = BaseEntity.ID;
+            if(filter.getField().contains(StringUtil.DOT)) {
+                dotChecher = true;
+
+
+                 path = filter.getField().substring(0, filter.getField().lastIndexOf('.'));
+                 property = filter.getField().substring(filter.getField().lastIndexOf('.') + 1);
+
+            }
+
+
 
 
 
@@ -177,22 +192,24 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
 
 
                     if (filter.getField().equals(BaseEntity.DELETED))
-                        predicates.add(criteriaBuilder.equal(joinOrNotJoin(entityRoot, filter.getField()), Boolean.parseBoolean(filter.getValue())));
+                        predicates.add(criteriaBuilder.equal(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()) , Boolean.parseBoolean(filter.getValue())));
 
                     else
-                        predicates.add(criteriaBuilder.equal(joinOrNotJoin(entityRoot, filter.getField()), Boolean.parseBoolean(filter.getValue())));
+                        predicates.add(criteriaBuilder.equal(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Boolean.parseBoolean(filter.getValue())));
                     break;
                 case NE:
-                    predicates.add(criteriaBuilder.notEqual(joinOrNotJoin(entityRoot, filter.getField()), filter.getValue()));
+                    predicates.add(criteriaBuilder.notEqual(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
 //                    cb.notEqual(area, areaParam)
                     break;
                 case GT:
 
-                    predicates.add(
-                            criteriaBuilder.greaterThan(
-                                    joinOrNotJoin(entityRoot, filter.getField()),
-                                    isCreatable(filter.getValue()) ? Float.parseFloat(filter.getValue()) : filter.getValue())
-                    );
+                    predicates.add(isCreatable(filter.getValue()) ?
+                            criteriaBuilder.greaterThan(  dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()),
+
+                                     Float.parseFloat(filter.getValue())) :
+                            criteriaBuilder.greaterThan(  dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()),
+
+                                    filter.getValue()));
 //                    cb.greaterThan(name, nameParam)
 //                    cb.gt(area, areaParam)
                     break;
@@ -200,22 +217,22 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
 //                    cb.greaterThanOrEqualTo(name, nameParam)
 //                    cb.ge(area, areaParam);
                     predicates.add(isCreatable(filter.getValue()) ?
-                            criteriaBuilder.ge(entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
-                            criteriaBuilder.greaterThanOrEqualTo(entityRoot.get(filter.getField()), filter.getValue()));
+                            criteriaBuilder.ge(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
+                            criteriaBuilder.greaterThanOrEqualTo(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
                     break;
                 case LT:
 
                     predicates.add(isCreatable(filter.getValue()) ?
-                            criteriaBuilder.lt(entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
-                            criteriaBuilder.lessThan(entityRoot.get(filter.getField()), filter.getValue()));
+                            criteriaBuilder.lt(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
+                            criteriaBuilder.lessThan(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
 //                    cb.lt(area, areaParam)
                     break;
                 case LE:
 //                    String field = filter.getField();
 //                    String value = filter.getValue();
                     predicates.add(isCreatable(filter.getValue()) ?
-                            criteriaBuilder.le(entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
-                            criteriaBuilder.lessThanOrEqualTo(entityRoot.get(filter.getField()), filter.getValue()));
+                            criteriaBuilder.le(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
+                            criteriaBuilder.lessThanOrEqualTo(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
 //                    cb.le(area, areaParam)
                     break;
                 case IS_NULL:
@@ -229,7 +246,8 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
 
 //                    Predicate l1 = cb.like(path, param);
 //                    Predicate l2 = cb.like(path, "a%");
-                    predicates.add(criteriaBuilder.like(entityRoot.get(filter.getField()), StringUtil.PERCENT + filter.getValue() + StringUtil.PERCENT));
+                    predicates.add(criteriaBuilder.like(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()),
+                            StringUtil.PERCENT + filter.getValue() + StringUtil.PERCENT));
 
 
                     break;
@@ -264,7 +282,7 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
         return queri.where(predicates.toArray(new javax.persistence.criteria.Predicate[]{}));
     }
 
-    private Expression<?> joinOrNotJoin(Root<T> entityRoot, String field){
+    private Expression<Object> joinOrNotJoin(Root<T> entityRoot, String field){
         String path = field.substring(0, field.lastIndexOf('.'));
         String property = field.substring(field.lastIndexOf('.') + 1);
         return field.contains(StringUtil.DOT) ?
@@ -320,6 +338,7 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
         List<Selection<?>> properties = new ArrayList<>();
         List<String> list = new ArrayList<>();
         List<String> nonPrimitiveType = new ArrayList<>();
+        properties.add(entityRoot.get(BaseEntity.DELETED));
         for(String field : fields){
             if(!field.contains("$")) {
                 if(field.contains(StringUtil.DOT)){
@@ -329,7 +348,7 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
 //                        query.multiselect(entityRoot, p.get("id"));
                     properties.add(p.get(property));
                 }
-                else if(entityRoot.get(field).getModel()!=null && ClassUtils.isPrimitiveOrWrapper(entityRoot.get(field).getModel().getBindableJavaType())){
+                else if(entityRoot.get(field).getModel()!=null && (ClassUtils.isPrimitiveOrWrapper(entityRoot.get(field).getModel().getBindableJavaType()) || entityRoot.get(field).getModel().getBindableJavaType().getSimpleName().equals("String"))){
 
                     properties.add(entityRoot.get(field));
                 }

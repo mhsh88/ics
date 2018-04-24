@@ -51,6 +51,13 @@ public class QuestionEntity extends BaseEntity implements QuestionConstants {
 		this.text = text;
 	}
 
+	public QuestionEntity(boolean deleted , long id, String text){
+        super.id = id;
+		super.deleted = deleted;
+		this.text = text;
+
+	}
+
     public QuestionEntity(String question) {
         super();
         this.text = question;

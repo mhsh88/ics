@@ -35,6 +35,10 @@ public class SubMetricEntity extends BaseEntity implements SubMetricConstants {
     public SubMetricEntity() {
     }
 
+    public SubMetricEntity(Long id){
+        super.id = id;
+    }
+
 
     public SubMetricEntity(Long id, String text) {
         super.id = id;
