@@ -42,4 +42,9 @@ public class StandardEntity extends BaseEntity implements StandardConstants {
         super.id = id;
         this.text = text;
     }
+
+    public StandardEntity(String standard) {
+        super();
+        this.text = standard;
+    }
 }

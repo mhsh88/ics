@@ -50,4 +50,9 @@ public class QuestionEntity extends BaseEntity implements QuestionConstants {
 		super.id = id;
 		this.text = text;
 	}
+
+    public QuestionEntity(String question) {
+        super();
+        this.text = question;
+    }
 }

@@ -54,6 +54,11 @@ public class MetricEntity extends BaseEntity implements MetricConstants {
         this.questionHasSals = (List<QuestionHasSalEntity>) questionHasSals;
     }
 
+    public MetricEntity(String metric) {
+        super();
+        this.text = metric;
+    }
+
     public String getText() {
         return text;
     }

@@ -41,4 +41,8 @@ public class PreQuestionEntity extends BaseEntity implements PreQuestionConstant
 		this.text = text;
 	}
 
+	public PreQuestionEntity(String preQuestion) {
+		super();
+		this.text = preQuestion;
+	}
 }

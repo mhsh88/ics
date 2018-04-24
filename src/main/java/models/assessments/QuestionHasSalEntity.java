@@ -63,4 +63,20 @@ public class QuestionHasSalEntity extends BaseEntity implements QuestionHasSalCo
 
 	@JsonView(QuestionHasSalView.class)
 	public Float weight;
+
+	public QuestionHasSalEntity() {
+	}
+
+	public QuestionHasSalEntity(Long id,Integer priority, Float weight, String sal,String standard,  String metric, String subMetric, String question, String preQuestion ) {
+		super.id = id;
+
+		this.sal = new SalEntity(sal);
+		this.metric = new MetricEntity(metric);
+		this.subMetric = new SubMetricEntity(subMetric);
+		this.question = new QuestionEntity(question);
+		this.preQuestion = new PreQuestionEntity(preQuestion);
+		this.standard = new StandardEntity(standard);
+		this.priority = priority;
+		this.weight = weight;
+	}
 }

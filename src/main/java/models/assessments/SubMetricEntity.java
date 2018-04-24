@@ -40,4 +40,9 @@ public class SubMetricEntity extends BaseEntity implements SubMetricConstants {
         super.id = id;
         this.text = text;
     }
+
+    public SubMetricEntity(String subMetric) {
+        super();
+        this.text = subMetric;
+    }
 }
