@@ -7,6 +7,16 @@ package com.payAm.core.ebean;
 //import com.avaje.ebean.Query;
 //import com.avaje.ebean.text.PathProperties;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.Ops;
+import com.querydsl.core.types.Constant;
+//import com.mysema.query.support.Expressions;
+//import com.mysema.query.types.Constant;
+//import com.mysema.query.types.Ops;
+import com.querydsl.core.types.Predicate;
+//import com.querydsl.core.types.Predicate;
 import com.payAm.core.dto.FilterDto;
 import com.payAm.core.dto.PageDto;
 import com.payAm.core.dto.PaginationDto;
@@ -14,7 +24,15 @@ import com.payAm.core.dto.SorterDto;
 import com.payAm.core.i18n.CoreMessagesCodes;
 import com.payAm.core.model.BaseEntity;
 import com.payAm.core.util.StringUtil;
+
+
+import com.querydsl.core.types.dsl.SimplePath;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.QueryDslJpaRepository;
 import org.springframework.util.ClassUtils;
 
@@ -39,11 +57,27 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
     @PersistenceContext
     EntityManager entityManager;
 
-
+    @Autowired
     private QueryDslJpaRepository<T, ID> repository;
 
 
     public List<T> getModels(PageDto page) throws Exception{
+        Sort sort;
+        if (page.getSort() == null)
+            sort = new Sort(new Sort.Order(Sort.Direction.ASC, "id"), new Sort.Order(Sort.Direction.ASC, "value"));
+        else
+            sort = new Sort(page.getSort().getField().toLowerCase().equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, page.getSort().getField());
+        Pageable pageSpecification = new PageRequest(page.getPagination().getPageNumber() - 1, page.getPagination().getPageSize(), sort);
+    
+        BooleanBuilder predicate = new BooleanBuilder();
+        SimplePath<T> model = Expressions.path(getEntityClass(), getEntityClass().getSimpleName());
+        SimplePath<Boolean> deleted = Expressions.path(Boolean.class, model, "deleted");
+        Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
+
+        predicate.and(Expressions.predicate(Ops.EQ, deleted,  falseValue));
+        Page<T> firstResult = repository.findAll(predicate, pageSpecification);
+        List<T> result = repository.findAll(predicate, pageSpecification).getContent();
+        return result;
 
 
 //        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
@@ -83,7 +117,7 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
 //
 //        return repository.findAll(predicate, pageSpecification).getContent();
 
-        return  null;
+//        return  null;
 
 
 //        Class<?> asdf = Class.forName("Q" + getEntityClass().getSimpleName().toString(), true, ClassLoader.getSystemClassLoader());
@@ -133,7 +167,7 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
 
 
     public PageResult<T> findData(PageDto page) throws Exception {
-//        List<T> lsit =  getModels(page);
+        List<T> lsit =  getModels(page);
         PageResult<T> pageResult = new PageResult<>();
 //        pageResult.setData(lsit);
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
@@ -282,13 +316,13 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
         return queri.where(predicates.toArray(new javax.persistence.criteria.Predicate[]{}));
     }
 
-    private Expression<Object> joinOrNotJoin(Root<T> entityRoot, String field){
-        String path = field.substring(0, field.lastIndexOf('.'));
-        String property = field.substring(field.lastIndexOf('.') + 1);
-        return field.contains(StringUtil.DOT) ?
-                entityRoot.join(path).get(property) :
-                entityRoot.get(field);
-    };
+//    private Expression<Object> joinOrNotJoin(Root<T> entityRoot, String field){
+//        String path = field.substring(0, field.lastIndexOf('.'));
+//        String property = field.substring(field.lastIndexOf('.') + 1);
+//        return field.contains(StringUtil.DOT) ?
+//                entityRoot.join(path).get(property) :
+//                entityRoot.get(field);
+//    };
 
     private String changeToColumnName(String field) {
         if (field.contains(StringUtil.DOT)) {
