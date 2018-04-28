@@ -1,15 +1,7 @@
 package com.payAm.core.ebean;
 
 
-import com.fasterxml.jackson.databind.ser.Serializers;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.dsl.*;
-import com.querydsl.core.types.Ops;
-import com.querydsl.core.types.Constant;
-//import com.mysema.query.support.Expressions;
-//import com.mysema.query.types.Constant;
-//import com.mysema.query.types.Ops;
-//import com.querydsl.core.types.Predicate;
+import com.google.common.base.CaseFormat;
 import com.payAm.core.dto.FilterDto;
 import com.payAm.core.dto.PageDto;
 import com.payAm.core.dto.PaginationDto;
@@ -17,8 +9,15 @@ import com.payAm.core.dto.SorterDto;
 import com.payAm.core.i18n.CoreMessagesCodes;
 import com.payAm.core.model.BaseEntity;
 import com.payAm.core.util.StringUtil;
-
-
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Constant;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Ops;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.dsl.*;
+import com.querydsl.jpa.JPAQueryBase;
+import com.querydsl.jpa.impl.JPAQuery;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,14 +27,24 @@ import org.springframework.data.jpa.repository.support.QueryDslJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ClassUtils;
 
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.isNumeric;
+
+//import com.mysema.query.support.Expressions;
+//import com.mysema.query.types.Constant;
+//import com.mysema.query.types.Ops;
+//import com.querydsl.core.types.Predicate;
 
 //import com.payAm.core.util.FilterOperatorUtil;
 //import com.payAm.core.util.StringUtil;
@@ -45,12 +54,12 @@ import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 //@Primary
 @Service
-public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
+public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
 
     @PersistenceContext
     EntityManager entityManager;
 
-//    @Autowired
+    //    @Autowired
     public QueryDslJpaRepository<T, ID> repository;
 
     JpaEntityInformation<T, ?> entityInformation;
@@ -60,16 +69,21 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
 //    }
 
 
-    public List<T> getModels(PageDto page) throws Exception{
+    public List<T> getModels(PageDto page) throws Exception {
         entityInformation = JpaEntityInformationSupport.getEntityInformation(getEntityClass(), entityManager);
         repository = new QueryDslJpaRepository<T, ID>((JpaEntityInformation<T, ID>) entityInformation, entityManager);
         Sort sort;
         if (page.getSort() == null)
             sort = new Sort(new Sort.Order(Sort.Direction.ASC, "id"), new Sort.Order(Sort.Direction.ASC, "value"));
-        else
-            sort = new Sort(page.getSort().getField().toLowerCase().equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, page.getSort().getField());
+        else {
+            if (page.getSort().getOrder() == null) {
+                page.getSort().setOrder("DESC");
+                page.getSort().setField("id");
+            }
+            sort = new Sort(page.getSort().getOrder().toLowerCase().equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, page.getSort().getField());
+        }
         Pageable pageSpecification = new PageRequest(page.getPagination().getPageNumber() - 1, page.getPagination().getPageSize(), sort);
-    
+
         BooleanBuilder predicate = new BooleanBuilder();
         String variable = getEntityClass().getSimpleName().substring(0, getEntityClass().getSimpleName().length() - 6);
         SimplePath<T> model = Expressions.path(getEntityClass(), "deleted");
@@ -77,7 +91,7 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
         SimplePath<Long> count = Expressions.path(Long.class, model, "deleted");
         Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
 
-        predicate.and(Expressions.predicate(Ops.EQ, deleted,  falseValue));
+        predicate.and(Expressions.predicate(Ops.EQ, deleted, falseValue));
 //        Page<T> firstResult = repository.findAll(predicate, pageSpecificat
         predicate.and(Expressions.predicate(Ops.EQ, count, falseValue));
         int coun = repository.findAll(predicate).size();
@@ -170,7 +184,6 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
     }
 
 
-
     public PageResult<T> findData(PageDto page) throws Exception {
 //        List<T> lsit =  getModels(page);
         PageResult<T> pageResult = new PageResult<>();
@@ -179,13 +192,20 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
         Sort sort;
         if (page.getSort() == null)
             sort = new Sort(new Sort.Order(Sort.Direction.ASC, "id"), new Sort.Order(Sort.Direction.ASC, "value"));
-        else
-            sort = new Sort(page.getSort().getOrder().toLowerCase().equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, page.getSort().getField());
-        Pageable pageSpecification = new PageRequest(page.getPagination().getPageNumber() - 1, page.getPagination().getPageSize(), sort);
+
+            else{
+            if (page.getSort().getOrder() == null) {
+                page.getSort().setOrder("DESC");
+                page.getSort().setField("id");
+            }
+            sort = new Sort(page.getSort().getOrder().toLowerCase().equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, page.getSort().getField());}
+        Pageable pageSpecification = null;
+            if(page.isEnablePaging())
+                pageSpecification = new PageRequest(page.getPagination().getPageNumber() - 1, page.getPagination().getPageSize(), sort);
+
+
 
         BooleanBuilder predicate = new BooleanBuilder();
-//        PathBuilder<T> entityPath = new PathBuilder<>(getEntityClass(), "user");
-        PathBuilder<T> entityPath2 = new PathBuilder<>(getEntityClass(), "user");
         List<BooleanExpression> predicates = new ArrayList<>();
 
 
@@ -195,11 +215,27 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
         SimplePath<Long> count = Expressions.path(Long.class, model, "deleted");
         Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
 
-        predicate.and(Expressions.predicate(Ops.EQ, deleted,  falseValue));
+        predicate.and(Expressions.predicate(Ops.EQ, deleted, falseValue));
 
-        PathBuilder<T> entityPath = new PathBuilder<>(getEntityClass(), variable);
-        BooleanPath asdf = entityPath.getBoolean("id");
-        BooleanExpression expressionsList = filterResults(page.getFilters());
+//        Class<T> tClass = getEntityClass();
+
+//        PathBuilder<T> tPathBuilder = PathBuilderFactory.create(tClass);
+//        PathBuilder<T> path = new PathBuilder<T>(getEntityClass(), getEntityClass().getSimpleName());
+//        StringPath id = path.getString("id");
+////        PathBuilder<User> entity = new PathBuilder<User>(User.class, "entity");
+////        QGenericEntity qGenericEntity = new QGenericEntity(path);
+//
+//        PathBuilder<T> entityPath = new PathBuilder<>(getEntityClass(),"id");
+////        BooleanPath asdf = entityPath.getBoolean("id");
+//        List<PathBuilder<Object>> ldst = new ArrayList<>();
+//        for (String field : page.getFetchFields()) {
+//            ldst.add(path.get(field));
+//        }
+//
+//        List<T> ds = repository.findAll((Iterable<ID>) ldst);
+
+
+        BooleanExpression expressionsList = filterResults(page.getFetchFields(), page.getFilters());
 
 //        Page<T> firstResult = repository.findAll(predicate, pageSpecificat
 //        predicate.and(Expressions.predicate(Ops.EQ, count, falseValue));
@@ -214,15 +250,15 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
 //        Root<T> entityRoot = queri.from(getEntityClass());
 //
 //        queri = addPathProperties(queri, criteriaBuilder ,entityRoot, page.getFetchFields());
+        List<T> res = null;
 
+        if (page.isEnablePaging()) {
+            pageResult.setTotal(repository.findAll(expressionsList).size());
+            res = repository.findAll(expressionsList, pageSpecification).getContent();
+        }
+        else
+            res = repository.findAll(expressionsList);
 
-        
-       if (page.isEnablePaging()) {
-        pageResult.setTotal( repository.findAll(expressionsList).size());
-    }
-
-
-        List<T> res = repository.findAll(expressionsList);
 //
 //        queri = resultOrder(queri, criteriaBuilder, entityRoot, page.getSort());
 //
@@ -235,13 +271,17 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
 //
 //
 //        List<T> entities = qry.getResultList();
+
         pageResult.setData(res);
         pageResult.setMessage(CoreMessagesCodes.SUCCESSFUL_LOAD_MODELS);
         return pageResult;
     }
-    public BooleanExpression getPredicate(FilterDto filter) {
-        PathBuilder<T> entityPath = new PathBuilder<>(getEntityClass(), filter.getField());
-        BooleanPath asdf = entityPath.getBoolean("id");
+
+    public BooleanExpression getPredicate(PathBuilder<T> entityPath, FilterDto filter) {
+
+//        PathBuilder<Object> sd = entityPath.get(filter.getField());
+
+
 
         if (isNumeric(filter.getField().toString())) {
             NumberPath<Float> path = entityPath.getNumber(filter.getField(), Float.class);
@@ -249,7 +289,7 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
             switch (filter.getOperator()) {
                 case EQ:
                     return path.eq(value);
-                case  NE:
+                case NE:
                     return path.ne(value);
                 case GT:
                     return path.gt(value);
@@ -295,18 +335,16 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
                 default:
 
             }
-        }
-        else if(filter.getField().equals(BaseEntity.DELETED)){
+        } else if (filter.getField().equals(BaseEntity.DELETED)) {
             BooleanPath path = entityPath.getBoolean(filter.getField());
             return path.eq(Boolean.parseBoolean(filter.getValue()));
 
-        }
-        else {
+        } else {
             StringPath path = entityPath.getString(filter.getField());
             switch (filter.getOperator()) {
                 case EQ:
                     return path.eq(filter.getValue());
-                case  NE:
+                case NE:
                     return path.ne(filter.getValue());
                 case GT:
                     return path.gt(filter.getValue());
@@ -322,7 +360,7 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
                 case IS_NOT_NULL:
                     break;
                 case LIKE:
-                    return path.like(StringUtil.PERCENT+filter.getValue()+StringUtil.PERCENT);
+                    return path.like(StringUtil.PERCENT + filter.getValue() + StringUtil.PERCENT);
                 case STARTS_WITH:
                     break;
                 case ENDS_WITH:
@@ -352,24 +390,89 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
             }
 
 
-
         }
         return null;
     }
 
-    private BooleanExpression filterResults(List<FilterDto> filters) {
-        List<BooleanExpression> predicates = new ArrayList<>();
-//        MyUserPredicate predicate;
-        for (FilterDto filter : filters) {
+    private void applyWhereExpression(JPAQueryBase query) {
+        BooleanExpression expression = findWhereExpression();
 
-            BooleanExpression exp = getPredicate(filter);
-            if (exp != null) {
-                predicates.add(exp);
-            }
+        if (expression != null) {
+            query.where(expression);
         }
-        BooleanExpression result2 = predicates.get(0);
-        for (int i = 1; i < predicates.size(); i++) {
-            result2 = result2.and(predicates.get(i));
+    }
+
+    protected BooleanExpression findWhereExpression() {
+        return null;
+    }
+
+    private BooleanExpression filterResults(List<String> fetchFields, List<FilterDto> filters) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
+        List<BooleanExpression> predicates = new ArrayList<>();
+        PathBuilder<T> pathBuilder = new PathBuilder<>(getEntityClass(), CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, getEntityClass().getSimpleName()));
+
+
+        Class<?> tableClazz = Class.forName("models.assessments.Q" + getEntityClass().getSimpleName());
+        EntityPath<T> object = (EntityPath<T>) tableClazz.getConstructor(String.class).newInstance(CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, getEntityClass().getSimpleName()));
+        Path<?> asdfsda = object.getRoot();
+
+        JPAQueryBase entity = new JPAQuery(entityManager).from(object);
+        applyWhereExpression(entity);
+        List<T> thislist = entity.fetch();
+
+
+        Class<?> dad = (Class.forName("models.assessments.QSalEntity"));
+
+//        Object tableObj = tableClazz.getConstructor(String.class).newInstance( "salEntity");
+
+
+
+
+        List<JPAQueryBase> sld = new ArrayList<>();
+        JPAQueryBase jpaQueryBase = new JPAQuery(entityManager).from(pathBuilder);
+
+        for (String fetchField : fetchFields)
+            if (!fetchField.contains("$")) {
+                if (fetchField.contains(StringUtil.DOT)) {
+                    String path = fetchField.substring(0, fetchField.lastIndexOf('.'));
+                    String property = fetchField.substring(fetchField.lastIndexOf('.') + 1);
+                    PathBuilder<T> joining = new PathBuilder<T>(
+                            (Class<? extends T>) Class.forName("models.assessments." + CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, path) + "Entity"),
+                            path+"Entity");
+
+                    Class<?> f = Class.forName("models.assessments." + CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, path) + "Entity").getConstructor().newInstance().getClass().getField(property).getType();
+
+//                    joining.get(property); on(joining.get(property, f.getClass()).eq(pathBuilder.get(path)))
+                    jpaQueryBase.leftJoin(pathBuilder.get(path, f.getClass()), joining);
+
+                }
+//                else
+//                    pathBuilder.get(fetchField);
+            }
+        List<T> adadf = jpaQueryBase.fetch();
+        BooleanExpression sdfa = pathBuilder.get("id", Long.class).eq((long) 100);
+        JPAQueryBase jpaQueryB = (JPAQueryBase) new JPAQuery(entityManager).from(pathBuilder).where(pathBuilder.get("id", Long.class).eq((long) 100));
+        List<T> thisList =jpaQueryB.fetch();
+
+
+        BooleanExpression result2 = pathBuilder.getBoolean(BaseEntity.DELETED).eq(false);
+
+
+//        BooleanPath asdf = entityPath.getBoolean("id");
+
+
+//        MyUserPredicate predicate;
+        if (filters.size() > 0) {
+            for (FilterDto filter : filters) {
+
+                BooleanExpression exp = getPredicate(pathBuilder, filter);
+                if (exp != null) {
+                    predicates.add(exp);
+                }
+            }
+//            result2 = predicates.get(0);
+            for (int i = 0; i < predicates.size(); i++) {
+                result2 = result2.and(predicates.get(i));
+            }
         }
         return result2;
 //        List<javax.persistence.criteria.Predicate> predicates = new ArrayList<>();
@@ -509,7 +612,7 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
     private CriteriaQuery<T> resultOrder(CriteriaQuery<T> queri, CriteriaBuilder criteriaBuilder, Root<T> entityRoot, SorterDto sort) {
 //        if(sort.getOrder().equals())
 
-        if(sort.getField().contains(StringUtil.DOT)){
+        if (sort.getField().contains(StringUtil.DOT)) {
             String path = sort.getField().substring(0, sort.getField().lastIndexOf('.'));
             String property = sort.getField().substring(sort.getField().lastIndexOf('.') + 1);
 
@@ -519,13 +622,11 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
                     queri.orderBy(criteriaBuilder.desc(joinedEntity.get(property)));
 
 
-        }
-        else{
+        } else {
             queri = sort.getOrder().toLowerCase().equals("asc") ?
                     queri.orderBy(criteriaBuilder.asc(entityRoot.get(sort.getField()))) :
                     queri.orderBy(criteriaBuilder.desc(entityRoot.get(sort.getField())));
         }
-
 
 
         return queri;
@@ -540,26 +641,23 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
     }
 
 
-
     private CriteriaQuery<T> addPathProperties(CriteriaQuery<T> query, CriteriaBuilder criteriaBuilder, Root<T> entityRoot, List<String> fields) throws ClassNotFoundException {
         List<Selection<?>> properties = new ArrayList<>();
         List<String> list = new ArrayList<>();
         List<String> nonPrimitiveType = new ArrayList<>();
         properties.add(entityRoot.get(BaseEntity.DELETED));
-        for(String field : fields){
-            if(!field.contains("$")) {
-                if(field.contains(StringUtil.DOT)){
+        for (String field : fields) {
+            if (!field.contains("$")) {
+                if (field.contains(StringUtil.DOT)) {
                     String path = field.substring(0, field.lastIndexOf('.'));
                     String property = field.substring(field.lastIndexOf('.') + 1);
                     Join<T, Object> p = entityRoot.join(path);
 //                        query.multiselect(entityRoot, p.get("id"));
                     properties.add(p.get(property));
-                }
-                else if(entityRoot.get(field).getModel()!=null && (ClassUtils.isPrimitiveOrWrapper(entityRoot.get(field).getModel().getBindableJavaType()) || entityRoot.get(field).getModel().getBindableJavaType().getSimpleName().equals("String"))){
+                } else if (entityRoot.get(field).getModel() != null && (ClassUtils.isPrimitiveOrWrapper(entityRoot.get(field).getModel().getBindableJavaType()) || entityRoot.get(field).getModel().getBindableJavaType().getSimpleName().equals("String"))) {
 
                     properties.add(entityRoot.get(field));
-                }
-                else{
+                } else {
 
                 }
             }
