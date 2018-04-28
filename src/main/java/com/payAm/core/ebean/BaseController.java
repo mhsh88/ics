@@ -156,6 +156,7 @@ public abstract class BaseController<T extends BaseEntity, ID extends Serializab
 //            return ResponseEntity.ok().body(modelsPageResult);
         }
         catch (Exception e) {
+            e.printStackTrace();
             modelsPageResult.unsuccessfulOperation(e.getMessage());
             return ResponseEntity.badRequest().body(mapper.writerWithView(getViewClass()).writeValueAsString(modelsPageResult));
 //            return ResponseEntity.badRequest().body(modelsPageResult);

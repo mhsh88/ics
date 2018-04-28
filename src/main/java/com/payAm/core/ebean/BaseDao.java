@@ -1,21 +1,14 @@
 package com.payAm.core.ebean;
 
 
-//import com.avaje.ebean.Expr;
-//import com.avaje.ebean.ExpressionList;
-//import com.avaje.ebean.Junction;
-//import com.avaje.ebean.Query;
-//import com.avaje.ebean.text.PathProperties;
-
+import com.fasterxml.jackson.databind.ser.Serializers;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.*;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Constant;
 //import com.mysema.query.support.Expressions;
 //import com.mysema.query.types.Constant;
 //import com.mysema.query.types.Ops;
-import com.querydsl.core.types.Predicate;
 //import com.querydsl.core.types.Predicate;
 import com.payAm.core.dto.FilterDto;
 import com.payAm.core.dto.PageDto;
@@ -26,14 +19,13 @@ import com.payAm.core.model.BaseEntity;
 import com.payAm.core.util.StringUtil;
 
 
-import com.querydsl.core.types.dsl.SimplePath;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.support.JpaEntityInformation;
+import org.springframework.data.jpa.repository.support.JpaEntityInformationSupport;
 import org.springframework.data.jpa.repository.support.QueryDslJpaRepository;
+import org.springframework.stereotype.Service;
 import org.springframework.util.ClassUtils;
 
 import javax.persistence.*;
@@ -43,7 +35,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 //import com.payAm.core.util.FilterOperatorUtil;
 //import com.payAm.core.util.StringUtil;
@@ -51,17 +43,26 @@ import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
 //@org.springframework.stereotype.Repository
 //@Transactional
 
-@Primary
+//@Primary
+@Service
 public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
 
     @PersistenceContext
     EntityManager entityManager;
 
-    @Autowired
-    private QueryDslJpaRepository<T, ID> repository;
+//    @Autowired
+    public QueryDslJpaRepository<T, ID> repository;
+
+    JpaEntityInformation<T, ?> entityInformation;
+
+//    public BaseDao(JpaEntityInformation<BaseEntity, Serializable> entityInformation, EntityManager entityManager) {
+//        super(entityInformation, entityManager);
+//    }
 
 
     public List<T> getModels(PageDto page) throws Exception{
+        entityInformation = JpaEntityInformationSupport.getEntityInformation(getEntityClass(), entityManager);
+        repository = new QueryDslJpaRepository<T, ID>((JpaEntityInformation<T, ID>) entityInformation, entityManager);
         Sort sort;
         if (page.getSort() == null)
             sort = new Sort(new Sort.Order(Sort.Direction.ASC, "id"), new Sort.Order(Sort.Direction.ASC, "value"));
@@ -70,12 +71,16 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
         Pageable pageSpecification = new PageRequest(page.getPagination().getPageNumber() - 1, page.getPagination().getPageSize(), sort);
     
         BooleanBuilder predicate = new BooleanBuilder();
-        SimplePath<T> model = Expressions.path(getEntityClass(), getEntityClass().getSimpleName());
+        String variable = getEntityClass().getSimpleName().substring(0, getEntityClass().getSimpleName().length() - 6);
+        SimplePath<T> model = Expressions.path(getEntityClass(), "deleted");
         SimplePath<Boolean> deleted = Expressions.path(Boolean.class, model, "deleted");
+        SimplePath<Long> count = Expressions.path(Long.class, model, "deleted");
         Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
 
         predicate.and(Expressions.predicate(Ops.EQ, deleted,  falseValue));
-        Page<T> firstResult = repository.findAll(predicate, pageSpecification);
+//        Page<T> firstResult = repository.findAll(predicate, pageSpecificat
+        predicate.and(Expressions.predicate(Ops.EQ, count, falseValue));
+        int coun = repository.findAll(predicate).size();
         List<T> result = repository.findAll(predicate, pageSpecification).getContent();
         return result;
 
@@ -167,121 +172,99 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
 
 
     public PageResult<T> findData(PageDto page) throws Exception {
-        List<T> lsit =  getModels(page);
+//        List<T> lsit =  getModels(page);
         PageResult<T> pageResult = new PageResult<>();
+        entityInformation = JpaEntityInformationSupport.getEntityInformation(getEntityClass(), entityManager);
+        repository = new QueryDslJpaRepository<T, ID>((JpaEntityInformation<T, ID>) entityInformation, entityManager);
+        Sort sort;
+        if (page.getSort() == null)
+            sort = new Sort(new Sort.Order(Sort.Direction.ASC, "id"), new Sort.Order(Sort.Direction.ASC, "value"));
+        else
+            sort = new Sort(page.getSort().getOrder().toLowerCase().equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, page.getSort().getField());
+        Pageable pageSpecification = new PageRequest(page.getPagination().getPageNumber() - 1, page.getPagination().getPageSize(), sort);
+
+        BooleanBuilder predicate = new BooleanBuilder();
+//        PathBuilder<T> entityPath = new PathBuilder<>(getEntityClass(), "user");
+        PathBuilder<T> entityPath2 = new PathBuilder<>(getEntityClass(), "user");
+        List<BooleanExpression> predicates = new ArrayList<>();
+
+
+        String variable = getEntityClass().getSimpleName().substring(0, getEntityClass().getSimpleName().length() - 6);
+        SimplePath<T> model = Expressions.path(getEntityClass(), "deleted");
+        SimplePath<Boolean> deleted = Expressions.path(Boolean.class, model, "deleted");
+        SimplePath<Long> count = Expressions.path(Long.class, model, "deleted");
+        Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
+
+        predicate.and(Expressions.predicate(Ops.EQ, deleted,  falseValue));
+
+        PathBuilder<T> entityPath = new PathBuilder<>(getEntityClass(), variable);
+        BooleanPath asdf = entityPath.getBoolean("id");
+        BooleanExpression expressionsList = filterResults(page.getFilters());
+
+//        Page<T> firstResult = repository.findAll(predicate, pageSpecificat
+//        predicate.and(Expressions.predicate(Ops.EQ, count, falseValue));
+
+
+//        List<T> result = repository.findAll(predicate, pageSpecification).getContent();
 //        pageResult.setData(lsit);
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+//        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+////
+//        CriteriaQuery<T> queri = criteriaBuilder.createQuery(getEntityClass());
 //
-        CriteriaQuery<T> queri = criteriaBuilder.createQuery(getEntityClass());
-
-        Root<T> entityRoot = queri.from(getEntityClass());
-
-        queri = addPathProperties(queri, criteriaBuilder ,entityRoot, page.getFetchFields());
-
-        queri = filterResults(queri, criteriaBuilder, entityRoot, page.getFilters());
-
-        queri = resultOrder(queri, criteriaBuilder, entityRoot, page.getSort());
+//        Root<T> entityRoot = queri.from(getEntityClass());
+//
+//        queri = addPathProperties(queri, criteriaBuilder ,entityRoot, page.getFetchFields());
 
 
-        TypedQuery<T> qry = entityManager.createQuery(queri);
-//        int sfa = qry.getMaxResults();
-//        qry.
-        if (page.isEnablePaging()) {
-            pageResult.setTotal(qry.getResultList().size());
-        }
-        qry = addPagination(qry, page.getPagination());
+        
+       if (page.isEnablePaging()) {
+        pageResult.setTotal( repository.findAll(expressionsList).size());
+    }
 
 
-        List<T> entities = qry.getResultList();
-        pageResult.setData(entities);
+        List<T> res = repository.findAll(expressionsList);
+//
+//        queri = resultOrder(queri, criteriaBuilder, entityRoot, page.getSort());
+//
+//
+//        TypedQuery<T> qry = entityManager.createQuery(queri);
+////        int sfa = qry.getMaxResults();
+////        qry.
+
+//        qry = addPagination(qry, page.getPagination());
+//
+//
+//        List<T> entities = qry.getResultList();
+        pageResult.setData(res);
         pageResult.setMessage(CoreMessagesCodes.SUCCESSFUL_LOAD_MODELS);
         return pageResult;
     }
+    public BooleanExpression getPredicate(FilterDto filter) {
+        PathBuilder<T> entityPath = new PathBuilder<>(getEntityClass(), filter.getField());
+        BooleanPath asdf = entityPath.getBoolean("id");
 
-    private CriteriaQuery<T> filterResults(CriteriaQuery<T> queri, CriteriaBuilder criteriaBuilder, Root<T> entityRoot, List<FilterDto> filters) {
-        List<javax.persistence.criteria.Predicate> predicates = new ArrayList<>();
-        Expression<T> pathRoot;
-        Boolean dotChecher = false;
-
-        for (FilterDto filter : filters) {
-            dotChecher = false;
-            String path = filter.getField();
-            String property = BaseEntity.ID;
-            if(filter.getField().contains(StringUtil.DOT)) {
-                dotChecher = true;
-
-
-                 path = filter.getField().substring(0, filter.getField().lastIndexOf('.'));
-                 property = filter.getField().substring(filter.getField().lastIndexOf('.') + 1);
-
-            }
-
-
-
-
-
-
+        if (isNumeric(filter.getField().toString())) {
+            NumberPath<Float> path = entityPath.getNumber(filter.getField(), Float.class);
+            float value = Float.parseFloat(filter.getValue().toString());
             switch (filter.getOperator()) {
                 case EQ:
-
-
-                    if (filter.getField().equals(BaseEntity.DELETED))
-                        predicates.add(criteriaBuilder.equal(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()) , Boolean.parseBoolean(filter.getValue())));
-
-                    else
-                        predicates.add(criteriaBuilder.equal(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Boolean.parseBoolean(filter.getValue())));
-                    break;
-                case NE:
-                    predicates.add(criteriaBuilder.notEqual(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
-//                    cb.notEqual(area, areaParam)
-                    break;
+                    return path.eq(value);
+                case  NE:
+                    return path.ne(value);
                 case GT:
-
-                    predicates.add(isCreatable(filter.getValue()) ?
-                            criteriaBuilder.greaterThan(  dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()),
-
-                                     Float.parseFloat(filter.getValue())) :
-                            criteriaBuilder.greaterThan(  dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()),
-
-                                    filter.getValue()));
-//                    cb.greaterThan(name, nameParam)
-//                    cb.gt(area, areaParam)
-                    break;
+                    return path.gt(value);
                 case GE:
-//                    cb.greaterThanOrEqualTo(name, nameParam)
-//                    cb.ge(area, areaParam);
-                    predicates.add(isCreatable(filter.getValue()) ?
-                            criteriaBuilder.ge(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
-                            criteriaBuilder.greaterThanOrEqualTo(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
-                    break;
+                    return path.goe(value);
                 case LT:
-
-                    predicates.add(isCreatable(filter.getValue()) ?
-                            criteriaBuilder.lt(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
-                            criteriaBuilder.lessThan(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
-//                    cb.lt(area, areaParam)
-                    break;
+                    return path.lt(value);
                 case LE:
-//                    String field = filter.getField();
-//                    String value = filter.getValue();
-                    predicates.add(isCreatable(filter.getValue()) ?
-                            criteriaBuilder.le(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
-                            criteriaBuilder.lessThanOrEqualTo(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
-//                    cb.le(area, areaParam)
-                    break;
+                    return path.loe(value);
                 case IS_NULL:
-//                    cb.isNull(name)
                     break;
 
                 case IS_NOT_NULL:
-//                    cb.isNotNull(name)
                     break;
                 case LIKE:
-
-//                    Predicate l1 = cb.like(path, param);
-//                    Predicate l2 = cb.like(path, "a%");
-                    predicates.add(criteriaBuilder.like(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()),
-                            StringUtil.PERCENT + filter.getValue() + StringUtil.PERCENT));
 
 
                     break;
@@ -291,8 +274,9 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
                     break;
                 case IN:
 
+                    return path.in(value);
 
-                    break;
+
                 case JSON_EQ:
                     break;
                 case JSON_EXISTS:
@@ -309,11 +293,200 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable>  {
                 case NOT:
                     break;
                 default:
-                    //code to be executed if all cases are not matched;
+
             }
+        }
+        else if(filter.getField().equals(BaseEntity.DELETED)){
+            BooleanPath path = entityPath.getBoolean(filter.getField());
+            return path.eq(Boolean.parseBoolean(filter.getValue()));
 
         }
-        return queri.where(predicates.toArray(new javax.persistence.criteria.Predicate[]{}));
+        else {
+            StringPath path = entityPath.getString(filter.getField());
+            switch (filter.getOperator()) {
+                case EQ:
+                    return path.eq(filter.getValue());
+                case  NE:
+                    return path.ne(filter.getValue());
+                case GT:
+                    return path.gt(filter.getValue());
+                case GE:
+                    return path.goe(filter.getValue());
+                case LT:
+                    return path.lt(filter.getValue());
+                case LE:
+                    return path.loe(filter.getValue());
+                case IS_NULL:
+                    break;
+
+                case IS_NOT_NULL:
+                    break;
+                case LIKE:
+                    return path.like(StringUtil.PERCENT+filter.getValue()+StringUtil.PERCENT);
+                case STARTS_WITH:
+                    break;
+                case ENDS_WITH:
+                    break;
+                case IN:
+
+                    return path.in(filter.getValue());
+
+
+                case JSON_EQ:
+                    break;
+                case JSON_EXISTS:
+                    break;
+                case JSON_NE:
+                    break;
+                case JSON_NOT_EXISTS:
+                    break;
+                case AND:
+//                    and();
+                    break;
+                case OR:
+                    break;
+                case NOT:
+                    break;
+                default:
+
+            }
+
+
+
+        }
+        return null;
+    }
+
+    private BooleanExpression filterResults(List<FilterDto> filters) {
+        List<BooleanExpression> predicates = new ArrayList<>();
+//        MyUserPredicate predicate;
+        for (FilterDto filter : filters) {
+
+            BooleanExpression exp = getPredicate(filter);
+            if (exp != null) {
+                predicates.add(exp);
+            }
+        }
+        BooleanExpression result2 = predicates.get(0);
+        for (int i = 1; i < predicates.size(); i++) {
+            result2 = result2.and(predicates.get(i));
+        }
+        return result2;
+//        List<javax.persistence.criteria.Predicate> predicates = new ArrayList<>();
+//        Expression<T> pathRoot;
+//        Boolean dotChecher = false;
+//
+//        for (FilterDto filter : filters) {
+//            dotChecher = false;
+//            String path = filter.getField();
+//            String property = BaseEntity.ID;
+//            if(filter.getField().contains(StringUtil.DOT)) {
+//                dotChecher = true;
+//
+//
+//                 path = filter.getField().substring(0, filter.getField().lastIndexOf('.'));
+//                 property = filter.getField().substring(filter.getField().lastIndexOf('.') + 1);
+//
+//            }
+//
+//
+//
+//
+//
+//
+//            switch (filter.getOperator()) {
+//                case EQ:
+//
+//
+//                    if (filter.getField().equals(BaseEntity.DELETED))
+//                        predicates.add(criteriaBuilder.equal(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()) , Boolean.parseBoolean(filter.getValue())));
+//
+//                    else
+//                        predicates.add(criteriaBuilder.equal(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Boolean.parseBoolean(filter.getValue())));
+//                    break;
+//                case NE:
+//                    predicates.add(criteriaBuilder.notEqual(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
+////                    cb.notEqual(area, areaParam)
+//                    break;
+//                case GT:
+//
+//                    predicates.add(isCreatable(filter.getValue()) ?
+//                            criteriaBuilder.greaterThan(  dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()),
+//
+//                                     Float.parseFloat(filter.getValue())) :
+//                            criteriaBuilder.greaterThan(  dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()),
+//
+//                                    filter.getValue()));
+////                    cb.greaterThan(name, nameParam)
+////                    cb.gt(area, areaParam)
+//                    break;
+//                case GE:
+////                    cb.greaterThanOrEqualTo(name, nameParam)
+////                    cb.ge(area, areaParam);
+//                    predicates.add(isCreatable(filter.getValue()) ?
+//                            criteriaBuilder.ge(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
+//                            criteriaBuilder.greaterThanOrEqualTo(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
+//                    break;
+//                case LT:
+//
+//                    predicates.add(isCreatable(filter.getValue()) ?
+//                            criteriaBuilder.lt(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
+//                            criteriaBuilder.lessThan(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
+////                    cb.lt(area, areaParam)
+//                    break;
+//                case LE:
+////                    String field = filter.getField();
+////                    String value = filter.getValue();
+//                    predicates.add(isCreatable(filter.getValue()) ?
+//                            criteriaBuilder.le(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
+//                            criteriaBuilder.lessThanOrEqualTo(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
+////                    cb.le(area, areaParam)
+//                    break;
+//                case IS_NULL:
+////                    cb.isNull(name)
+//                    break;
+//
+//                case IS_NOT_NULL:
+////                    cb.isNotNull(name)
+//                    break;
+//                case LIKE:
+//
+////                    Predicate l1 = cb.like(path, param);
+////                    Predicate l2 = cb.like(path, "a%");
+//                    predicates.add(criteriaBuilder.like(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()),
+//                            StringUtil.PERCENT + filter.getValue() + StringUtil.PERCENT));
+//
+//
+//                    break;
+//                case STARTS_WITH:
+//                    break;
+//                case ENDS_WITH:
+//                    break;
+//                case IN:
+//
+//
+//                    break;
+//                case JSON_EQ:
+//                    break;
+//                case JSON_EXISTS:
+//                    break;
+//                case JSON_NE:
+//                    break;
+//                case JSON_NOT_EXISTS:
+//                    break;
+//                case AND:
+////                    and();
+//                    break;
+//                case OR:
+//                    break;
+//                case NOT:
+//                    break;
+//                default:
+//                    //code to be executed if all cases are not matched;
+//            }
+//
+//        }
+//        return queri.where(predicates.toArray(new javax.persistence.criteria.Predicate[]{}));
     }
 
 //    private Expression<Object> joinOrNotJoin(Root<T> entityRoot, String field){
