@@ -36,155 +36,25 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static org.apache.commons.lang3.StringUtils.isNumeric;
-
-//import com.mysema.query.support.Expressions;
-//import com.mysema.query.types.Constant;
-//import com.mysema.query.types.Ops;
-//import com.querydsl.core.types.Predicate;
-
-//import com.payAm.core.util.FilterOperatorUtil;
-//import com.payAm.core.util.StringUtil;
-
-//@org.springframework.stereotype.Repository
-//@Transactional
-
-//@Primary
 @Service
 public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
 
     @PersistenceContext
     EntityManager entityManager;
 
-    //    @Autowired
     public QueryDslJpaRepository<T, ID> repository;
 
     JpaEntityInformation<T, ?> entityInformation;
 
-//    public BaseDao(JpaEntityInformation<BaseEntity, Serializable> entityInformation, EntityManager entityManager) {
-//        super(entityInformation, entityManager);
-//    }
 
 
-    public List<T> getModels(PageDto page) throws Exception {
-        entityInformation = JpaEntityInformationSupport.getEntityInformation(getEntityClass(), entityManager);
-        repository = new QueryDslJpaRepository<T, ID>((JpaEntityInformation<T, ID>) entityInformation, entityManager);
-        Sort sort;
-        if (page.getSort() == null)
-            sort = new Sort(new Sort.Order(Sort.Direction.ASC, "id"), new Sort.Order(Sort.Direction.ASC, "value"));
-        else {
-            if (page.getSort().getOrder() == null) {
-                page.getSort().setOrder("DESC");
-                page.getSort().setField("id");
-            }
-            sort = new Sort(page.getSort().getOrder().toLowerCase().equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, page.getSort().getField());
-        }
-        Pageable pageSpecification = new PageRequest(page.getPagination().getPageNumber() - 1, page.getPagination().getPageSize(), sort);
-
-        BooleanBuilder predicate = new BooleanBuilder();
-        String variable = getEntityClass().getSimpleName().substring(0, getEntityClass().getSimpleName().length() - 6);
-        SimplePath<T> model = Expressions.path(getEntityClass(), "deleted");
-        SimplePath<Boolean> deleted = Expressions.path(Boolean.class, model, "deleted");
-        SimplePath<Long> count = Expressions.path(Long.class, model, "deleted");
-        Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
-
-        predicate.and(Expressions.predicate(Ops.EQ, deleted, falseValue));
-//        Page<T> firstResult = repository.findAll(predicate, pageSpecificat
-        predicate.and(Expressions.predicate(Ops.EQ, count, falseValue));
-        int coun = repository.findAll(predicate).size();
-        List<T> result = repository.findAll(predicate, pageSpecification).getContent();
-        return result;
-
-
-//        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-//
-//        QSubMetricEntity qSubMetricEntity = QSubMetricEntity.subMetricEntity;
-//        queryFactory.selectFrom(qSubMetricEntity)
-//                .where(qSubMetricEntity.deleted.isFalse())
-//                .fetch();
-//
-//        SubMetricEntity c = queryFactory.selectFrom(qSubMetricEntity)
-//                .where(qSubMetricEntity.deleted.eq(false))
-//                .fetchOne();
-//
-//        Sort sort;
-//        if (page.getSort() == null)
-//            sort = new Sort(new Sort.Order(Sort.Direction.ASC, "id"), new Sort.Order(Sort.Direction.ASC, "value"));
-//        else
-//            sort = new Sort(page.getSort().getField().toLowerCase().equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, page.getSort().getField());
-//        Pageable pageSpecification = new PageRequest(page.getPagination().getPageNumber() - 1, page.getPagination().getPageSize(), sort);
-//
-//        BooleanBuilder predicate = new BooleanBuilder();
-//        Path<SubMetricEntity> subMetricEntityPath = Expressions.path(SubMetricEntity.class, "sub_metric");
-//
-//        Path<Boolean> deleted = Expressions.path(Boolean.class, subMetricEntityPath, "deleted");
-//        Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
-////        Operator<Boolean> operation = new Operator<Boolean>();
-//
-//        if (page.getFilters() != null)
-//            for (FilterDto filter : page.getFilters()) {
-//                Path<String> field = Expressions.path(String.class, subMetricEntityPath, filter.getField());
-//                Constant<String> value = (Constant<String>) Expressions.constant(filter.getValue());
-//                if (true) predicate.or(Expressions.predicate(, field, value));
-//                else predicate.and(Expressions.predicate(filter.getOps(), field, value));
-//            }
-//
-//        predicate.and(Expressions.predicate(Ops.EQ, deleted, falseValue));
-//
-//        return repository.findAll(predicate, pageSpecification).getContent();
-
-//        return  null;
-
-
-//        Class<?> asdf = Class.forName("Q" + getEntityClass().getSimpleName().toString(), true, ClassLoader.getSystemClassLoader());
-
-//        new QBaseEntity("baseEntity");
-//        List<T> c = queryFactory.selectFrom(getEntityClass())
-//                .orderBy(user.login.asc())
-//                .fetch();
-
-//        QBaseEntity qBaseEntity = getQtypeOfEntity();
-//        List<Filter> filters, Sorter sorter, int page, int limit, boolean isOr
-//        System.out.println("Q"+getEntityClass().getSimpleName().toString()+StringUtil.DOT+getEntityClass().getSimpleName().toString().toLowerCase());
-//        Class.forName("Q"+getEntityClass().getSimpleName().toString()+StringUtil.DOT+getEntityClass().getSimpleName().toString().toLowerCase());
-//        T model = Class.forName("Q"+getEntityClass().getSimpleName().toString()+StringUtil.DOT+getEntityClass().getSimpleName().toString().toLowerCase(), true,)
-//        QBaseEntity model = QBaseEntity.baseEntity;
-//        BaseEntity baseEntity= queryFactory.selec
-//        List<T> c = queryFactory.selectFrom(user)
-//                .orderBy(user.login.asc())
-//                .fetch();
-//        Sort sort;
-//        if (page.getSort().getOrder() == null)
-//            sort = new Sort(new Sort.Order(Sort.Direction.ASC, page.getFetchFields().get(1)), new Sort.Order(Sort.Direction.ASC, page.getFetchFields().get(0)));
-//        else
-//            sort = new Sort(page.getSort().getOrder().toLowerCase().equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, page.getSort().getField());
-//
-//        Pageable pageSpecification = new PageRequest(page.getPagination().getPageNumber() - 1, page.getPagination().getPageSize(), sort);
-//
-//        BooleanBuilder predicate = new BooleanBuilder();
-//        Path<T> model = Expressions.path(Class.forName(getEntityClass()), "*");
-//
-//        SimplePath<Boolean> deleted = Expressions.path(Boolean.class, (com.mysema.query.types.Path<?>) model, BaseEntity.DELETED);
-//        Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
-//
-//        if (page.getFilters() != null)
-//            for (FilterDto filter : page.getFilters()) {
-//                SimplePath<String> field = Expressions.path(String.class, model, filter.getField());
-//                Constant<String> value = (Constant<String>) Expressions.constant(filter.getValue());
-////                if (page.getAdvancedFilter()) predicate.or(Expressions.predicate(filter.getOperator().getCode(), field, value));
-////                else predicate.and(Expressions.predicate(filter.getOperator(), field, value));
-//            }
-//
-//        predicate.and(Expressions.predicate(Ops.EQ, deleted, falseValue));
-
-//        return repository.findAll();//predicate, pageSpecification).getContent();
-    }
 
 
     public PageResult<T> findData(PageDto page) throws Exception {
-//        List<T> lsit =  getModels(page);
         PageResult<T> pageResult = new PageResult<>();
         entityInformation = JpaEntityInformationSupport.getEntityInformation(getEntityClass(), entityManager);
         repository = new QueryDslJpaRepository<T, ID>((JpaEntityInformation<T, ID>) entityInformation, entityManager);
@@ -202,52 +72,16 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
             if(page.isEnablePaging())
                 pageSpecification = new PageRequest(page.getPagination().getPageNumber() - 1, page.getPagination().getPageSize(), sort);
 
-
-
-//        BooleanBuilder predicate = new BooleanBuilder();
-//        List<BooleanExpression> predicates = new ArrayList<>();
-//
-//
-//        String variable = getEntityClass().getSimpleName().substring(0, getEntityClass().getSimpleName().length() - 6);
-//        SimplePath<T> model = Expressions.path(getEntityClass(), "deleted");
-//        SimplePath<Boolean> deleted = Expressions.path(Boolean.class, model, "deleted");
-//        SimplePath<Long> count = Expressions.path(Long.class, model, "deleted");
-//        Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
-//
-//        predicate.and(Expressions.predicate(Ops.EQ, deleted, falseValue));
-
-//        Class<T> tClass = getEntityClass();
-
-//        PathBuilder<T> tPathBuilder = PathBuilderFactory.create(tClass);
-//        PathBuilder<T> path = new PathBuilder<T>(getEntityClass(), getEntityClass().getSimpleName());
-//        StringPath id = path.getString("id");
-////        PathBuilder<User> entity = new PathBuilder<User>(User.class, "entity");
-////        QGenericEntity qGenericEntity = new QGenericEntity(path);
-//
-//        PathBuilder<T> entityPath = new PathBuilder<>(getEntityClass(),"id");
-////        BooleanPath asdf = entityPath.getBoolean("id");
-//        List<PathBuilder<Object>> ldst = new ArrayList<>();
-//        for (String field : page.getFetchFields()) {
-//            ldst.add(path.get(field));
-//        }
-//
-//        List<T> ds = repository.findAll((Iterable<ID>) ldst);
-
-
         PathBuilder<T> pathBuilder = new PathBuilder<>(getEntityClass(), CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, getEntityClass().getSimpleName()));
         Querydsl querydsl = new Querydsl(entityManager,pathBuilder);
-        JPQLQuery<T> query = querydsl.createQuery();
+        JPQLQuery<T> query;
 
 
         query = filterResults(pathBuilder, page.getFetchFields(), page.getFilters());
 
 
-//        querydsl.applyPagination()
         List<T> res;
-//        if(page.isEnableSorting())
-//            query = querydsl.applySorting(sort, query);
         if(page.isEnablePaging()) {
-//            query.fetch();
             pageResult.setTotal((int) query.fetchCount());
             query = querydsl.applyPagination(pageSpecification, query);
             res =  query.fetch();
@@ -256,64 +90,14 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
         else
             res = query.fetch();
 
-//
-
-//        Page<T> firstResult = repository.findAll(predicate, pageSpecificat
-//        predicate.and(Expressions.predicate(Ops.EQ, count, falseValue));
-
-
-//        List<T> result = repository.findAll(predicate, pageSpecification).getContent();
-//        pageResult.setData(lsit);
-//        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-////
-//        CriteriaQuery<T> queri = criteriaBuilder.createQuery(getEntityClass());
-//
-//        Root<T> entityRoot = queri.from(getEntityClass());
-//
-//        queri = addPathProperties(queri, criteriaBuilder ,entityRoot, page.getFetchFields());
-
-
-//        if (page.isEnablePaging()) {
-//            pageResult.setTotal(repository.findAll(expressionsList).size());
-//            res = repository.findAll(expressionsList, pageSpecification).getContent();
-//        }
-//        else
-//            res = repository.findAll(expressionsList);
-//        org.springframework.data.jpa.repository.support.Querydsl querydsl = new
-//        if (page.isEnablePaging()) {
-//
-//            pageResult.setTotal(query.fetch().size());
-//            query.
-//            query = applyPagination(query,page.getPagination());
-//        }
-//        else
-//            res = repository.findAll(expressionsList);
-
-//
-//        queri = resultOrder(queri, criteriaBuilder, entityRoot, page.getSort());
-//
-//
-//        TypedQuery<T> qry = entityManager.createQuery(queri);
-////        int sfa = qry.getMaxResults();
-////        qry.
-
-//        qry = addPagination(qry, page.getPagination());
-//
-//
-//        List<T> entities = qry.getResultList();
-
         pageResult.setData(res);
         pageResult.setMessage(CoreMessagesCodes.SUCCESSFUL_LOAD_MODELS);
         return pageResult;
     }
 
-    private JPAQueryBase applyPagination(JPAQueryBase query, PaginationDto pagination) {
-        return query;
-    }
 
     public com.querydsl.core.types.Predicate getPredicate(PathBuilder<T> entityPath, FilterDto filter) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
 
-//        PathBuilder<Object> sd = entityPath.get(filter.getField());
         PathBuilder<?> genericPath = null;
         Predicate predicate = null;
         BooleanBuilder builder = new BooleanBuilder();
@@ -339,172 +123,35 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
 
         }
 
-//
-//        SimplePath<Boolean> deleted = Expressions.path(Boolean.class, genericPath, BaseEntity.DELETED);
-//        Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
-//
-//        builder.and(Expressions.predicate(Ops.EQ, deleted, falseValue));
 
         com.querydsl.core.types.Path<T> path;
         return addEpressionToPath(builder, genericPath,filter.getOperator(), field,
-                property, filter.getValue());
-
-//        if(Number.class.isAssignableFrom(field)) {
-//            if(Integer.class.isAssignableFrom(field))
-//                return addEpressionToPath(builder, genericPath,filter.getOperator(), Integer.class,
-//                        property, filter.getValue());
-//            if(Float.class.isAssignableFrom(field))
-//
-//                return addEpressionToPath(genericPath.get(property, Float.class),filter.getOperator(), Float.class, filter.getValue());
-//            if(Long.class.isAssignableFrom(field))
-//
-//            return addEpressionToPath(genericPath.get(property, Long.class),filter.getOperator(), Float.class, filter.getValue());
-//            if(Double.class.isAssignableFrom(field))
-//                return addEpressionToPath(genericPath.get(property, Double.class),filter.getOperator(), Float.class, filter.getValue());
-//        } else if(String.class.isAssignableFrom(field)) {
-//            return addEpressionToPath(genericPath.get(property, String.class),filter.getOperator(), Float.class, filter.getValue());
-//
-//        }
-//        else if(Boolean.class.isAssignableFrom(field))
-//            return addEpressionToPath(genericPath.get(property, Boolean.class),filter.getOperator(), Float.class, filter.getValue());
-
-
-
-//        genericPath.eq(filter.getValue());
-//        entityPath.getString(filter.getField()).eq(filter.getValue());
-//        predicate = genericPath.eq(filter.getValue());
-
-
-
-//        if (isNumeric(filter.getField())) {
-//            NumberPath<Float> path = entityPath.getNumber(filter.getField(), Float.class);
-//            float value = Float.parseFloat(filter.getValue().toString());
-//            switch (filter.getOperator()) {
-//                case EQ:
-//                    return path.eq(value);
-//                case NE:
-//                    return path.ne(value);
-//                case GT:
-//                    return path.gt(value);
-//                case GE:
-//                    return path.goe(value);
-//                case LT:
-//                    return path.lt(value);
-//                case LE:
-//                    return path.loe(value);
-//                case IS_NULL:
-//                    break;
-//
-//                case IS_NOT_NULL:
-//                    break;
-//                case LIKE:
-//
-//
-//                    break;
-//                case STARTS_WITH:
-//                    break;
-//                case ENDS_WITH:
-//                    break;
-//                case IN:
-//
-//                    return path.in(value);
-//
-//
-//                case JSON_EQ:
-//                    break;
-//                case JSON_EXISTS:
-//                    break;
-//                case JSON_NE:
-//                    break;
-//                case JSON_NOT_EXISTS:
-//                    break;
-//                case AND:
-////                    and();
-//                    break;
-//                case OR:
-//                    break;
-//                case NOT:
-//                    break;
-//                default:
-//
-//            }
-//        } else if (filter.getField().equals(BaseEntity.DELETED)) {
-//            BooleanPath path = entityPath.getBoolean(filter.getField());
-//            return path.eq(Boolean.parseBoolean(filter.getValue()));
-//
-//        } else {
-//            StringPath path = entityPath.getString(filter.getField());
-//            switch (filter.getOperator()) {
-//                case EQ:
-//                    return path.eq(filter.getValue());
-//                case NE:
-//                    return path.ne(filter.getValue());
-//                case GT:
-//                    return path.gt(filter.getValue());
-//                case GE:
-//                    return path.goe(filter.getValue());
-//                case LT:
-//                    return path.lt(filter.getValue());
-//                case LE:
-//                    return path.loe(filter.getValue());
-//                case IS_NULL:
-//                    break;
-//
-//                case IS_NOT_NULL:
-//                    break;
-//                case LIKE:
-//                    return path.like(StringUtil.PERCENT + filter.getValue() + StringUtil.PERCENT);
-//                case STARTS_WITH:
-//                    break;
-//                case ENDS_WITH:
-//                    break;
-//                case IN:
-//
-//                    return path.in(filter.getValue());
-//
-//
-//                case JSON_EQ:
-//                    break;
-//                case JSON_EXISTS:
-//                    break;
-//                case JSON_NE:
-//                    break;
-//                case JSON_NOT_EXISTS:
-//                    break;
-//                case AND:
-////                    and();
-//                    break;
-//                case OR:
-//                    break;
-//                case NOT:
-//                    break;
-//                default:
-//
-//            }
-//
-//
-//        }
-//        return null;
+                property, filter);
     }
 
 
-    private com.querydsl.core.types.Predicate addEpressionToPath(BooleanBuilder builder, PathBuilder<?> pathBuilder, Operator operator, Class<?> clazz, String filter, String value) {
+    private com.querydsl.core.types.Predicate addEpressionToPath(BooleanBuilder builder, PathBuilder<?> pathBuilder, Operator operator, Class<?> clazz, String filter, FilterDto value) {
 
         SimplePath<?> field = Expressions.path(clazz, pathBuilder, filter);
         Constant<?> val;
         if(Long.class.isAssignableFrom(clazz)) {
-            val = (Constant<?>) Expressions.constant(Long.parseLong(value));
+        try {
+            val = (Constant<?>) Expressions.constant(Long.parseLong(value.getValue()));
+        }
+        catch (Exception e){
+            val = (Constant<?>) Expressions.constant(value.getValue());
+        }
         }
         else if (Integer.class.isAssignableFrom(clazz))
-            val = (Constant<?>) Expressions.constant(Integer.parseInt(value));
+            val = (Constant<?>) Expressions.constant(Integer.parseInt(value.getValue()));
         else if(Double.class.isAssignableFrom(clazz))
-            val = (Constant<?>) Expressions.constant(Double.parseDouble(value));
+            val = (Constant<?>) Expressions.constant(Double.parseDouble(value.getValue()));
         else if(Float.class.isAssignableFrom(clazz))
-            val = (Constant<?>) Expressions.constant(Float.parseFloat(value));
+            val = (Constant<?>) Expressions.constant(Float.parseFloat(value.getValue()));
         else if(Boolean.class.isAssignableFrom(clazz))
-            val = (Constant<?>) Expressions.constant(Boolean.parseBoolean(value));
+            val = (Constant<?>) Expressions.constant(Boolean.parseBoolean(value.getValue()));
         else
-            val = (Constant<?>) Expressions.constant(value);
+            val = (Constant<?>) Expressions.constant(value.getValue());
 
 
 
@@ -539,6 +186,9 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
             case ENDS_WITH:
                 return builder.and(Expressions.predicate(Ops.ENDS_WITH, field, val));
             case IN:
+
+                List<Long> list = Arrays.asList(value.getValue().split(",")).stream().map(s -> Long.parseLong(s.trim())).collect(Collectors.toList());
+                val = (Constant<?>) Expressions.constant(list);//.stream().map(s -> Long.parseLong(s.trim())).collect(Collectors.toList()));
 
                 return builder.and(Expressions.predicate(Ops.IN, field, val));
 
@@ -575,32 +225,9 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
         return query;
     }
 
-    protected BooleanExpression findWhereExpression() {
-        return null;
-    }
 
     private JPAQueryBase filterResults(PathBuilder<T> pathBuilder, List<String> fetchFields, List<FilterDto> filters) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
-//        List<BooleanExpression> predicates = new ArrayList<>();
-//        PathBuilder<T> pathBuilder = new PathBuilder<>(getEntityClass(), CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, getEntityClass().getSimpleName()));
-//
-//
-//        Class<?> tableClazz = Class.forName("models.assessments.Q" + getEntityClass().getSimpleName());
-//            EntityPath<T> object = (EntityPath<T>) tableClazz.getConstructor(String.class).newInstance(CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, getEntityClass().getSimpleName()));
-//        Path<?> asdfsda = object.getRoot();
-//
-//        JPAQueryBase entity = new JPAQuery(entityManager).from(object);
-////        applyWhereExpression(entity);
-//        List<T> thislist = entity.fetch();
-//
-//
-//        Class<?> dad = (Class.forName("models.assessments.QSalEntity"));
-//
-////        Object tableObj = tableClazz.getConstructor(String.class).newInstance( "salEntity");
-//
-//
-//
-//
-//        List<JPAQueryBase> sld = new ArrayList<>();
+
         JPAQueryBase jpaQueryBase = new JPAQuery(entityManager).from(pathBuilder);
 
         for (String fetchField : fetchFields)
@@ -617,285 +244,28 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
 //                    joining.get(property); on(joining.get(property, f.getClass()).eq(pathBuilder.get(path)))
                     jpaQueryBase.join(pathBuilder.get(path, f.getClass()), joining)/*.select(joining.get(path, f.getClass()))*/;
 
+
                 }
                 else {
-//                    Class<?> f = getEntityClass().getField(fetchField).getType();
-//                    pathBuilder.get(fetchField, f);
-//
-//                    jpaQueryBase.select(pathBuilder);
+                    Class<?> f = getEntityClass().getField(fetchField).getType();
+                    pathBuilder.get(fetchField, f);
+
+                    jpaQueryBase.select(pathBuilder);
                 }
             }
 
-
-//        BooleanExpression sdfa = pathBuilder.get("id", Long.class).eq((long) 100);
-//        JPAQueryBase jpaQueryB = (JPAQueryBase) new JPAQuery(entityManager).from(pathBuilder).where(pathBuilder.get("id", Long.class).eq((long) 100));
-//        List<T> thisList =jpaQueryB.fetch();
-
-
-//        BooleanExpression result2 = pathBuilder.getBoolean(BaseEntity.DELETED).eq(false);
-
-
-//        BooleanPath asdf = entityPath.getBoolean("id");
-
-
-//        MyUserPredicate predicate;
         if (filters.size() > 0) {
             for (FilterDto filter : filters) {
-//                jpaQueryBase.where(pathBuilder.get(filter.getField()).eq(filter.getValue()));
+
 
                 jpaQueryBase = applyWhereExpression(jpaQueryBase, pathBuilder, filter);
-
-//                BooleanExpression exp = getPredicate(pathBuilder, filter);
-//                if (exp != null) {
-//                    predicates.add(exp);
-//                }
             }
-//            result2 = predicates.get(0);
-//            for (int i = 0; i < predicates.size(); i++) {
-//                result2 = result2.and(predicates.get(i));
-//            }
         }
 
-//        List<T> res = jpaQueryBase.fetch();
         return jpaQueryBase;
-//        List<javax.persistence.criteria.Predicate> predicates = new ArrayList<>();
-//        Expression<T> pathRoot;
-//        Boolean dotChecher = false;
-//
-//        for (FilterDto filter : filters) {
-//            dotChecher = false;
-//            String path = filter.getField();
-//            String property = BaseEntity.ID;
-//            if(filter.getField().contains(StringUtil.DOT)) {
-//                dotChecher = true;
-//
-//
-//                 path = filter.getField().substring(0, filter.getField().lastIndexOf('.'));
-//                 property = filter.getField().substring(filter.getField().lastIndexOf('.') + 1);
-//
-//            }
-//
-//
-//
-//
-//
-//
-//            switch (filter.getOperator()) {
-//                case EQ:
-//
-//
-//                    if (filter.getField().equals(BaseEntity.DELETED))
-//                        predicates.add(criteriaBuilder.equal(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()) , Boolean.parseBoolean(filter.getValue())));
-//
-//                    else
-//                        predicates.add(criteriaBuilder.equal(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Boolean.parseBoolean(filter.getValue())));
-//                    break;
-//                case NE:
-//                    predicates.add(criteriaBuilder.notEqual(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
-////                    cb.notEqual(area, areaParam)
-//                    break;
-//                case GT:
-//
-//                    predicates.add(isCreatable(filter.getValue()) ?
-//                            criteriaBuilder.greaterThan(  dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()),
-//
-//                                     Float.parseFloat(filter.getValue())) :
-//                            criteriaBuilder.greaterThan(  dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()),
-//
-//                                    filter.getValue()));
-////                    cb.greaterThan(name, nameParam)
-////                    cb.gt(area, areaParam)
-//                    break;
-//                case GE:
-////                    cb.greaterThanOrEqualTo(name, nameParam)
-////                    cb.ge(area, areaParam);
-//                    predicates.add(isCreatable(filter.getValue()) ?
-//                            criteriaBuilder.ge(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
-//                            criteriaBuilder.greaterThanOrEqualTo(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
-//                    break;
-//                case LT:
-//
-//                    predicates.add(isCreatable(filter.getValue()) ?
-//                            criteriaBuilder.lt(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
-//                            criteriaBuilder.lessThan(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
-////                    cb.lt(area, areaParam)
-//                    break;
-//                case LE:
-////                    String field = filter.getField();
-////                    String value = filter.getValue();
-//                    predicates.add(isCreatable(filter.getValue()) ?
-//                            criteriaBuilder.le(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), Float.parseFloat(filter.getValue())) :
-//                            criteriaBuilder.lessThanOrEqualTo(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()), filter.getValue()));
-////                    cb.le(area, areaParam)
-//                    break;
-//                case IS_NULL:
-////                    cb.isNull(name)
-//                    break;
-//
-//                case IS_NOT_NULL:
-////                    cb.isNotNull(name)
-//                    break;
-//                case LIKE:
-//
-////                    Predicate l1 = cb.like(path, param);
-////                    Predicate l2 = cb.like(path, "a%");
-//                    predicates.add(criteriaBuilder.like(dotChecher? entityRoot.join(path).get(property) : entityRoot.get(filter.getField()),
-//                            StringUtil.PERCENT + filter.getValue() + StringUtil.PERCENT));
-//
-//
-//                    break;
-//                case STARTS_WITH:
-//                    break;
-//                case ENDS_WITH:
-//                    break;
-//                case IN:
-//
-//
-//                    break;
-//                case JSON_EQ:
-//                    break;
-//                case JSON_EXISTS:
-//                    break;
-//                case JSON_NE:
-//                    break;
-//                case JSON_NOT_EXISTS:
-//                    break;
-//                case AND:
-////                    and();
-//                    break;
-//                case OR:
-//                    break;
-//                case NOT:
-//                    break;
-//                default:
-//                    //code to be executed if all cases are not matched;
-//            }
-//
-//        }
-//        return queri.where(predicates.toArray(new javax.persistence.criteria.Predicate[]{}));
-    }
-
-//    private Expression<Object> joinOrNotJoin(Root<T> entityRoot, String field){
-//        String path = field.substring(0, field.lastIndexOf('.'));
-//        String property = field.substring(field.lastIndexOf('.') + 1);
-//        return field.contains(StringUtil.DOT) ?
-//                entityRoot.join(path).get(property) :
-//                entityRoot.get(field);
-//    };
-
-    private String changeToColumnName(String field) {
-        if (field.contains(StringUtil.DOT)) {
-            String path = field.substring(0, field.lastIndexOf('.'));
-            String property = field.substring(field.lastIndexOf('.') + 1);
-            return path + StringUtil.UNDER_LINE + property;
-        }
-        return field;
-    }
-
-    private CriteriaQuery<T> resultOrder(CriteriaQuery<T> queri, CriteriaBuilder criteriaBuilder, Root<T> entityRoot, SorterDto sort) {
-//        if(sort.getOrder().equals())
-
-        if (sort.getField().contains(StringUtil.DOT)) {
-            String path = sort.getField().substring(0, sort.getField().lastIndexOf('.'));
-            String property = sort.getField().substring(sort.getField().lastIndexOf('.') + 1);
-
-            Join<T, Object> joinedEntity = entityRoot.join(path);
-            queri = sort.getOrder().toLowerCase().equals("asc") ?
-                    queri.orderBy(criteriaBuilder.asc(joinedEntity.get(property))) :
-                    queri.orderBy(criteriaBuilder.desc(joinedEntity.get(property)));
-
-
-        } else {
-            queri = sort.getOrder().toLowerCase().equals("asc") ?
-                    queri.orderBy(criteriaBuilder.asc(entityRoot.get(sort.getField()))) :
-                    queri.orderBy(criteriaBuilder.desc(entityRoot.get(sort.getField())));
-        }
-
-
-        return queri;
-    }
-
-    private TypedQuery<T> addPagination(TypedQuery<T> qry, PaginationDto pagination) {
-//        pagination.getPageNumber();
-
-        return qry.setFirstResult((pagination.getPageNumber() - 1) * pagination.getPageSize())
-                .setMaxResults(pagination.getPageSize());
-        /*.setMaxResults((pagination.getPageNumber() * pagination.getPageSize()) - 1)*/
     }
 
 
-    private CriteriaQuery<T> addPathProperties(CriteriaQuery<T> query, CriteriaBuilder criteriaBuilder, Root<T> entityRoot, List<String> fields) throws ClassNotFoundException {
-        List<Selection<?>> properties = new ArrayList<>();
-        List<String> list = new ArrayList<>();
-        List<String> nonPrimitiveType = new ArrayList<>();
-        properties.add(entityRoot.get(BaseEntity.DELETED));
-        for (String field : fields) {
-            if (!field.contains("$")) {
-                if (field.contains(StringUtil.DOT)) {
-                    String path = field.substring(0, field.lastIndexOf('.'));
-                    String property = field.substring(field.lastIndexOf('.') + 1);
-                    Join<T, Object> p = entityRoot.join(path);
-//                        query.multiselect(entityRoot, p.get("id"));
-                    properties.add(p.get(property));
-                } else if (entityRoot.get(field).getModel() != null && (ClassUtils.isPrimitiveOrWrapper(entityRoot.get(field).getModel().getBindableJavaType()) || entityRoot.get(field).getModel().getBindableJavaType().getSimpleName().equals("String"))) {
-
-                    properties.add(entityRoot.get(field));
-                } else {
-
-                }
-            }
-
-            String strf = "";
-        }
-
-//
-//        return query.multiselect(list.stream()
-//                .map(f -> entityRoot.get(f))
-//                .collect(Collectors.toList()));
-        return query.multiselect(properties);
-//        List<String> list = new ArrayList<>();
-//        for (String fullAssociationPath : fields) {
-//
-//            if(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_CAMEL, fullAssociationPath).equals(fullAssociationPath.toLowerCase())){
-//
-//                list.add(fullAssociationPath);
-//
-//            }
-//            else {
-//                String str = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, fullAssociationPath);
-//                String temp = str.substring(0,str.length()-1) + "Entity";
-////                Class<?> cls = Class.forName(temp);
-//            }
-////            list.add(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_CAMEL, fullAssociationPath));
-////            list.add(CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, fullAssociationPath));
-//
-//        }
-////        return query.multiselect(list.stream()
-////                .map(f -> entityRoot.get(f))
-////                .collect(Collectors.toList()));
-//        return query;
-
-
-//
-
-//
-//               if (fullAssociationPath.contains(StringUtil.DOT)) {
-//                   String path = fullAssociationPath.substring(0, fullAssociationPath.lastIndexOf('.'));
-//                   String property = fullAssociationPath.substring(fullAssociationPath.lastIndexOf('.') + 1);
-////                   pathProperties.addToPath(path, property);
-//               }
-//               else {
-//                    cq.multiselect(this.fields.stream()
-//                           .map(f -> root.get(f.getName()))
-//                           .collect(Collectors.toList()));
-//                   properties.add(entityRoot.get(fullAssociationPath));
-//               }
-//
-//
-//        }
-//        return query.multiselect(properties);
-
-    }
 
 
     private Class<T> getEntityClass() {
