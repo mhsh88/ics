@@ -4,11 +4,20 @@ package daos.users;
 //import com.avaje.ebean.QueryIterator;
 import com.payAm.core.ebean.BaseDao;
 //import enumerations.security.ActionTokenType;
+import enumerations.security.ActionTokenType;
 import models.users.TokenActionEntity;
+import models.users.UserEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
+import repositories.users.TokenActionRepository;
 //import models.users.UserEntity;
 
 import javax.inject.Singleton;
+import java.sql.Timestamp;
+import java.util.UUID;
+
+
 //import java.sql.Timestamp;
 //import java.util.UUID;
 
@@ -19,6 +28,9 @@ import javax.inject.Singleton;
 
 @Singleton
 public class TokenActionDao extends BaseDao<TokenActionEntity, Long> {
+
+    @Autowired
+    TokenActionRepository repository;
 //
 //    public TokenActionEntity findByToken(final String token, final ActionTokenType type) {
 //        return super.where()
@@ -36,19 +48,19 @@ public class TokenActionDao extends BaseDao<TokenActionEntity, Long> {
 //        iterator.close();
 //    }
 //
-//    public TokenActionEntity create(final ActionTokenType type, final String token, final UserEntity user) {
-//        final TokenActionEntity ta = new TokenActionEntity();
-//        ta.user = user;
-//        ta.token = token;
-//        ta.type = type;
-//        final Timestamp created = new Timestamp(System.currentTimeMillis());
-//        ta.created = created;
-//        ta.expires = new Timestamp(created.getTime() + TokenActionEntity.VERIFICATION_TIME * 1000);
-//        ta.save();
-//        return ta;
-//    }
+    public TokenActionEntity create( final ActionTokenType type, final String token, final UserEntity user) {
+        final TokenActionEntity ta = new TokenActionEntity();
+        ta.user = user;
+        ta.token = token;
+        ta.type = type;
+        final Timestamp created = new Timestamp(System.currentTimeMillis());
+        ta.created = created;
+        ta.expires = new Timestamp(created.getTime() + TokenActionEntity.VERIFICATION_TIME * 1000);
+        repository.save(ta);
+        return ta;
+    }
 //
-//    public static String generateToken() {
-//        return UUID.randomUUID().toString();
-//    }
+    public static String generateToken() {
+        return UUID.randomUUID().toString();
+    }
 }

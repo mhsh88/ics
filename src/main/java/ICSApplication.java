@@ -16,9 +16,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @SpringBootApplication(scanBasePackages={"com.*","controllers.*","models.*", "repositories.*","service.*","daos.*","config"})//{"models","controllers", "com.payAm.core.ebean"})
 @EnableJpaAuditing
 @PropertySource("application.properties")
-@ComponentScan(basePackages = {"com", "controllers","com.payAm.core.model","config"})
+@ComponentScan(basePackages = {"com", "controllers","com.payAm.core.model","config","daos.users"}, basePackageClasses = {daos.users.UserDao.class})
 @EntityScan(basePackages ={"com.*","controllers.*","models.*","repositories.*","service.*","com.payAm.core.model.*","daos.*","config"},basePackageClasses = BaseEntity.class)
-@EnableJpaRepositories(basePackages = {"com.*","controllers.*","models.*", "repositories.*","service.*","daos.*","config"}, basePackageClasses = {org.springframework.data.jpa.repository.support.QueryDslJpaRepository.class}/*, entityManagerFactoryRef="emf"*/)
+@EnableJpaRepositories(basePackages = {"com.*","controllers.*","models.*", "repositories.*","service.*","daos.*","config","daos.users"}, basePackageClasses = {org.springframework.data.jpa.repository.support.QueryDslJpaRepository.class, daos.users.UserDao.class}/*, entityManagerFactoryRef="emf"*/)
 public class ICSApplication {
     public static void main (String[] args){
 

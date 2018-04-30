@@ -5,6 +5,7 @@ import com.payAm.core.model.BaseEntity;
 import constants.users.TokenActionConstants;
 import dtos.users.TokenActionView;
 //import enumerations.security.ActionTokenType;
+import enumerations.security.ActionTokenType;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -31,9 +32,9 @@ public class TokenActionEntity extends BaseEntity implements TokenActionConstant
     @JoinColumn(name="user_id")
     public UserEntity user;
 
-//    @JsonView(TokenActionView.class)
-//    @NotNull(message = ERROR_TYPE_REQUIRED)
-//    public ActionTokenType type;
+    @JsonView(TokenActionView.class)
+    @NotNull(message = ERROR_TYPE_REQUIRED)
+    public ActionTokenType type;
 
     @JsonView(TokenActionView.class)
     @NotNull(message = ERROR_CREATED_REQUIRED)

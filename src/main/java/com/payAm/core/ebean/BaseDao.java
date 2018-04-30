@@ -2,11 +2,8 @@ package com.payAm.core.ebean;
 
 
 import com.google.common.base.CaseFormat;
-import com.payAm.core.criteria.Operator;
 import com.payAm.core.dto.FilterDto;
 import com.payAm.core.dto.PageDto;
-import com.payAm.core.dto.PaginationDto;
-import com.payAm.core.dto.SorterDto;
 import com.payAm.core.i18n.CoreMessagesCodes;
 import com.payAm.core.model.BaseEntity;
 import com.payAm.core.util.StringUtil;
@@ -25,17 +22,13 @@ import org.springframework.data.jpa.repository.support.JpaEntityInformationSuppo
 import org.springframework.data.jpa.repository.support.QueryDslJpaRepository;
 import org.springframework.data.jpa.repository.support.Querydsl;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ClassUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,6 +42,7 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
     public QueryDslJpaRepository<T, ID> repository;
 
     JpaEntityInformation<T, ?> entityInformation;
+
 
 
 

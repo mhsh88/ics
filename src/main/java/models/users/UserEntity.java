@@ -57,10 +57,10 @@ public class UserEntity extends BaseEntity implements UserConstants/*, Subject*/
 	@NotNull(message = ERROR_USERNAME_REQUIRED)
 	public String username;
 
-//	@JsonView(UserView.class)
-//	@Size(max=128, message = ERROR_EMAIL_MAX_LENGTH)
+	@JsonView(UserView.class)
+	@Size(max=128, message = ERROR_EMAIL_MAX_LENGTH)
 //	@Constraints.Email
-//	public String email;
+	public String email;
 
 	@JsonView(UserView.class)
 	@Column(name="email_activated")

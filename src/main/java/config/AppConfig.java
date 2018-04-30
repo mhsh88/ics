@@ -1,6 +1,8 @@
 package config;
 
 import daos.assessments.*;
+import daos.users.TokenActionDao;
+import daos.users.UserDao;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -88,6 +90,14 @@ public class AppConfig {
     public SubMetricDao subMetricDao(){
         return new SubMetricDao();
     }
+    @Bean
+    public UserDao userDao(){
+        return new UserDao();
+    }
+    @Bean
+    public TokenActionDao tokenActionDao(){
+        return new TokenActionDao();
+    }
 //    @Bean
 //    public FactoryBean<EntityManagerFactory> entityManagerFactory() {
 //
@@ -97,3 +107,5 @@ public class AppConfig {
 //    }
 
 }
+
+

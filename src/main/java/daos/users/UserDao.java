@@ -2,6 +2,8 @@ package daos.users;
 
 import com.payAm.core.ebean.BaseDao;
 import models.users.UserEntity;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import javax.inject.Singleton;
@@ -23,8 +25,10 @@ import javax.inject.Singleton;
 // * Creation Time: 2017/Feb/09 - 10:00
 // */
 //
-@Singleton
+@Component
 public class UserDao extends BaseDao<UserEntity, Long> {
+
+//    public abstract UserEntity findByUsernamePassword(UserEntity user);
 }
 
 //

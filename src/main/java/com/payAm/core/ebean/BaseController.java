@@ -38,7 +38,7 @@ public abstract class BaseController<T extends BaseEntity, ID extends Serializab
 
     ObjectMapper mapper = new ObjectMapper();
 
-    private CrudRepository<T, ID> repo;
+    protected CrudRepository<T, ID> repo;
 
     @PersistenceContext
     EntityManager entityManager;
