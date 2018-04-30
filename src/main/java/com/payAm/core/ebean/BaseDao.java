@@ -32,6 +32,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -332,20 +333,17 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
 
         }
         else{
-
-            field = Class.forName(String.valueOf(getEntityClass())).getConstructor().newInstance().getClass().getField(filter.getField()).getType();
             property = filter.getField();
-
+            field = getEntityClass().getField(property).getType();
             genericPath = entityPath;
-//            builder.and(genericPath.getSimple())
 
         }
 
-
-        SimplePath<Boolean> deleted = Expressions.path(Boolean.class, genericPath, BaseEntity.DELETED);
-        Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
-
-        builder.and(Expressions.predicate(Ops.EQ, deleted, falseValue));
+//
+//        SimplePath<Boolean> deleted = Expressions.path(Boolean.class, genericPath, BaseEntity.DELETED);
+//        Constant<Boolean> falseValue = (Constant<Boolean>) Expressions.constant(false);
+//
+//        builder.and(Expressions.predicate(Ops.EQ, deleted, falseValue));
 
         com.querydsl.core.types.Path<T> path;
         return addEpressionToPath(builder, genericPath,filter.getOperator(), field,
@@ -493,7 +491,22 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
     private com.querydsl.core.types.Predicate addEpressionToPath(BooleanBuilder builder, PathBuilder<?> pathBuilder, Operator operator, Class<?> clazz, String filter, String value) {
 
         SimplePath<?> field = Expressions.path(clazz, pathBuilder, filter);
-        Constant<?> val = (Constant<?>) Expressions.constant(value);
+        Constant<?> val;
+        if(Long.class.isAssignableFrom(clazz)) {
+            val = (Constant<?>) Expressions.constant(Long.parseLong(value));
+        }
+        else if (Integer.class.isAssignableFrom(clazz))
+            val = (Constant<?>) Expressions.constant(Integer.parseInt(value));
+        else if(Double.class.isAssignableFrom(clazz))
+            val = (Constant<?>) Expressions.constant(Double.parseDouble(value));
+        else if(Float.class.isAssignableFrom(clazz))
+            val = (Constant<?>) Expressions.constant(Float.parseFloat(value));
+        else if(Boolean.class.isAssignableFrom(clazz))
+            val = (Constant<?>) Expressions.constant(Boolean.parseBoolean(value));
+        else
+            val = (Constant<?>) Expressions.constant(value);
+
+
 
 
 
@@ -602,13 +615,17 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
                     Class<?> f = Class.forName("models.assessments." + CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, path) + "Entity").getConstructor().newInstance().getClass().getField(property).getType();
 
 //                    joining.get(property); on(joining.get(property, f.getClass()).eq(pathBuilder.get(path)))
-                    jpaQueryBase.leftJoin(pathBuilder.get(path, f.getClass()), joining);
+                    jpaQueryBase.join(pathBuilder.get(path, f.getClass()), joining)/*.select(joining.get(path, f.getClass()))*/;
 
                 }
-                else
-                    pathBuilder.get(fetchField);
+                else {
+//                    Class<?> f = getEntityClass().getField(fetchField).getType();
+//                    pathBuilder.get(fetchField, f);
+//
+//                    jpaQueryBase.select(pathBuilder);
+                }
             }
-            jpaQueryBase.select(pathBuilder);
+
 
 //        BooleanExpression sdfa = pathBuilder.get("id", Long.class).eq((long) 100);
 //        JPAQueryBase jpaQueryB = (JPAQueryBase) new JPAQuery(entityManager).from(pathBuilder).where(pathBuilder.get("id", Long.class).eq((long) 100));
