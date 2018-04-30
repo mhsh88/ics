@@ -14,7 +14,7 @@ import static com.payAm.core.constant.BaseConstants.QUERY;
  * Created by Payam Mostafaei
  * Creation Time: 2017/Jan/05 - 08:36 AM
  */
-//@JsonIgnoreProperties(ignoreUnknown=true)
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class PageDto implements Serializable, PagingPropertiesConstants {
 
     private List<FilterDto> filters = new ArrayList<>();

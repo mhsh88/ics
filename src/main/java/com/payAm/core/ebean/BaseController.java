@@ -17,6 +17,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import scala.util.parsing.json.JSONObject;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -30,6 +31,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Selection;
+import javax.servlet.http.HttpServletRequest;
 
 
 public abstract class BaseController<T extends BaseEntity, ID extends Serializable, V extends BaseView> {
@@ -40,8 +42,6 @@ public abstract class BaseController<T extends BaseEntity, ID extends Serializab
 
     protected CrudRepository<T, ID> repo;
 
-    @PersistenceContext
-    EntityManager entityManager;
 
     public abstract BaseDao< T, ID> getDao();
 
@@ -53,100 +53,16 @@ public abstract class BaseController<T extends BaseEntity, ID extends Serializab
 
     @RequestMapping/*(value = "/{queryString}", method=RequestMethod.GET)*/
     public @ResponseBody
-    ResponseEntity<String> listAll(@RequestParam Map<String,String> params
+    ResponseEntity<String> listAll(@RequestParam Map<String,String> params, HttpServletRequest request
                                                  ) throws IOException {
+        String queryString = request.getQueryString();
         PageDto pageDto = getPageDtoFromJson(params);
-
-/*
-        @RequestParam(required = false) String queryString,
-        @RequestParam MultiValueMap<T, T> requestParams,
-        @RequestParam(required = false) PageDto page,
-        @ModelAttribute PageDto page2,*/
-
-        /*@RequestBody(required = false) PageDto page3,
-        PageDto page4,
-        Model model,
-        HttpServletRequest req,
-        String query*/
-//        @ResponseBody
-//        String query = uriInfo.getRequestUri().getQuery();
-//        model.addAttribute("accept", "text/plain");
-//        JsonNode pageNode = request.body().asJson();
-//
-//        JsonNode pageNode = Json.parse(request.getQueryString().length() > 0 ?
-//                request.getQueryString().toCharArray()[0] : "{}");
-//                request().queryString().keySet().toArray()[0].toString() : "{}");
-//        PageDto page = Json.fromJson(pageNode, PageDto.class);
-
-//        System.out.println(request.getQueryString());
-//        request.getQueryString().length() > 0
-//        String jsonString = req.getQueryString();
-
-//        set.
-//        set.stream().filter(sample::equals).findAny().orElse(null);
-//        String str = set.stream().findFirst().get();
-//        String jsonString = params.get(0);
-//        params.
-//        params.keySet().
-//        JsonFactory fc = new JsonFactory();
-
-
-//
-//
-//
-//        JsonNode actualObj = null;
-//
-//        JsonFactory factory = mapper.getFactory();
-//        JsonParser jp = factory.createJsonParser(jsonString);
-//        JsonNode jsonNode = jp.readValueAsTree();
-//        PageDto pageFromJsonNode = mapper.treeToValue(jsonNode, PageDto.class);
-//        try {
-//            actualObj = mapper.readTree(jsonString);
-////            System.out.println(actualObj);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        JsonParser parser = null;
-//        try {
-//            parser = factory.createParser(jsonString);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-////        JsonNode actualObj = null;
-//        try {
-//            actualObj = mapper.readTree(parser);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-////        PageDto probe = mapper.convertValue(params, PageDto.class);
-////        JsonNode jsonNode0 = mapper.convertValue(jsonString, JsonNode.class);
-////        JsonNode jsonNode1 = mapper.convertValue(requestParams, JsonNode.class);
-////        JsonNode jsonNode2 = mapper.valueToTree(requestParams);
-////        try {
-////            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode1);
-////        } catch (JsonProcessingException e) {
-////            e.printStackTrace();
-////        }
-//        PageDto page5;
-//        try {
-//             page5 = mapper.treeToValue(actualObj, PageDto.class);
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//        }
-//        PageDto page6 = mapper.convertValue(actualObj, PageDto.class);
 
         PageResult<T> modelsPageResult = new PageResult<>();
 
         try {
             List<String> fields = getFetchedFields();
             pageDto.setFetchFields(fields);
-//            Iterable<T> all1 = getdata(pageDto);
-//            modelsPageResult.setData((List<T>) all1);
-//            Iterable<T> all = this.repo.findAll();
-//            for(T a : all1){
-//                modelsPageResult.addData(a);
-//            }
             modelsPageResult = find(pageDto);
             for (T model : modelsPageResult.getData()) {
                 afterLoad(model);
@@ -159,30 +75,20 @@ public abstract class BaseController<T extends BaseEntity, ID extends Serializab
             e.printStackTrace();
             modelsPageResult.unsuccessfulOperation(e.getMessage());
             return ResponseEntity.badRequest().body(mapper.writerWithView(getViewClass()).writeValueAsString(modelsPageResult));
-//            return ResponseEntity.badRequest().body(modelsPageResult);
         }
 
-
-
-
-//        modelsPageResult.setMessage(CoreMessagesCodes.SUCCESSFUL_LOAD_MODEL);
-
-
-//        response.setContentType("text/plain");
-//        response.setCharacterEncoding("UTF-8");
-
-
-
-//        return (ResponseEntity<T>) ResponseEntity.ok().body(writeJson(modelsPageResult));
-//        return Lists.newArrayList(all);
     }
 
     private PageDto getPageDtoFromJson(Map<String, String> params) throws IOException {
         String jsonString = "{}";
 
         try{
-            jsonString = params.keySet().stream().findFirst().get().length() > 0 ?
+            if(params.get(params.keySet().stream().findFirst().get()).equals(""))
+                jsonString = params.keySet().stream().findFirst().get().length() > 0 ?
                     params.keySet().stream().findFirst().get() : "{}";
+            else
+                jsonString = mapper.writeValueAsString(params);
+
         }
         catch (Exception e){
 
