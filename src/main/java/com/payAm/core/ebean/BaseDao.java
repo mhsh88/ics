@@ -113,51 +113,54 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
 
             field = Class.forName("models.assessments." + CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, pathString) + "Entity").getConstructor().newInstance().getClass().getField(property).getType();
 
-            genericPath = subPath;
+//            genericPath = subPath;
 
         }
         else{
             property = filter.getField();
             field = getEntityClass().getField(property).getType();
-            genericPath = entityPath;
+//            genericPath = entityPath;
 
         }
+        genericPath = entityPath;
 
 
-        com.querydsl.core.types.Path<T> path;
-        return addEpressionToPath(builder, genericPath,filter.getOperator(), field,
-                property, filter);
+//        com.querydsl.core.types.Path<T> path;
+//        return addEpressionToPath(builder, genericPath,filter.getOperator(), field,
+//                property, filter);
+        return addEpressionToPath(builder, genericPath,filter, field
+               );
     }
 
 
-    private com.querydsl.core.types.Predicate addEpressionToPath(BooleanBuilder builder, PathBuilder<?> pathBuilder, Operator operator, Class<?> clazz, String filter, FilterDto value) {
+    private com.querydsl.core.types.Predicate addEpressionToPath(BooleanBuilder builder, PathBuilder<?> pathBuilder, FilterDto filterDto, Class<?> clazz) {
 
-        SimplePath<?> field = Expressions.path(clazz, pathBuilder, filter);
+        SimplePath<?> field = Expressions.path(clazz, pathBuilder, filterDto.getField());
         Constant<?> val;
         if(Long.class.isAssignableFrom(clazz)) {
         try {
-            val = (Constant<?>) Expressions.constant(Long.parseLong(value.getValue()));
+            val = (Constant<?>) Expressions.constant(Long.parseLong(filterDto.getValue()));
         }
         catch (Exception e){
-            val = (Constant<?>) Expressions.constant(value.getValue());
+            val = (Constant<?>) Expressions.constant(filterDto.getValue());
         }
         }
         else if (Integer.class.isAssignableFrom(clazz))
-            val = (Constant<?>) Expressions.constant(Integer.parseInt(value.getValue()));
+            val = (Constant<?>) Expressions.constant(Integer.parseInt(filterDto.getValue()));
         else if(Double.class.isAssignableFrom(clazz))
-            val = (Constant<?>) Expressions.constant(Double.parseDouble(value.getValue()));
+            val = (Constant<?>) Expressions.constant(Double.parseDouble(filterDto.getValue()));
         else if(Float.class.isAssignableFrom(clazz))
-            val = (Constant<?>) Expressions.constant(Float.parseFloat(value.getValue()));
+            val = (Constant<?>) Expressions.constant(Float.parseFloat(filterDto.getValue()));
         else if(Boolean.class.isAssignableFrom(clazz))
-            val = (Constant<?>) Expressions.constant(Boolean.parseBoolean(value.getValue()));
+            val = (Constant<?>) Expressions.constant(Boolean.parseBoolean(filterDto.getValue()));
         else
-            val = (Constant<?>) Expressions.constant(value.getValue());
+            val = (Constant<?>) Expressions.constant(filterDto.getValue());
 
 
 
 
 
-        switch(operator){
+        switch(filterDto.getOperator()){
 
             case EQ:
                 return  builder.and(Expressions.predicate(Ops.EQ, field, val));
@@ -177,7 +180,7 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
             case IS_NOT_NULL:
                 return builder.and(Expressions.predicate(Ops.IS_NOT_NULL, field, val));
             case LIKE:
-                val = (Constant<?>) Expressions.constant(StringUtil.PERCENT + value + StringUtil.PERCENT);
+                val = (Constant<?>) Expressions.constant(StringUtil.PERCENT + filterDto.getValue() + StringUtil.PERCENT);
 
                 return builder.and(Expressions.predicate(Ops.LIKE, field, val));
             case STARTS_WITH:
@@ -187,7 +190,7 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
                 return builder.and(Expressions.predicate(Ops.ENDS_WITH, field, val));
             case IN:
 
-                List<Long> list = Arrays.asList(value.getValue().split(",")).stream().map(s -> Long.parseLong(s.trim())).collect(Collectors.toList());
+                List<Long> list = Arrays.asList(filterDto.getValue().split(",")).stream().map(s -> Long.parseLong(s.trim())).collect(Collectors.toList());
                 val = (Constant<?>) Expressions.constant(list);//.stream().map(s -> Long.parseLong(s.trim())).collect(Collectors.toList()));
 
                 return builder.and(Expressions.predicate(Ops.IN, field, val));
@@ -230,29 +233,29 @@ public abstract class BaseDao<T extends BaseEntity, ID extends Serializable> {
 
         JPAQueryBase jpaQueryBase = new JPAQuery(entityManager).from(pathBuilder);
 
-        for (String fetchField : fetchFields)
-            if (!fetchField.contains("$")) {
-                if (fetchField.contains(StringUtil.DOT)) {
-                    String path = fetchField.substring(0, fetchField.lastIndexOf('.'));
-                    String property = fetchField.substring(fetchField.lastIndexOf('.') + 1);
-                    PathBuilder<T> joining = new PathBuilder<T>(
-                            (Class<? extends T>) Class.forName("models.assessments." + CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, path) + "Entity"),
-                            path+"Entity");
-
-                    Class<?> f = Class.forName("models.assessments." + CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, path) + "Entity").getConstructor().newInstance().getClass().getField(property).getType();
-
-//                    joining.get(property); on(joining.get(property, f.getClass()).eq(pathBuilder.get(path)))
-                    jpaQueryBase.join(pathBuilder.get(path, f.getClass()), joining)/*.select(joining.get(path, f.getClass()))*/;
-
-
-                }
-                else {
-                    Class<?> f = getEntityClass().getField(fetchField).getType();
-                    pathBuilder.get(fetchField, f);
-
-                    jpaQueryBase.select(pathBuilder);
-                }
-            }
+//        for (String fetchField : fetchFields)
+//            if (!fetchField.contains("$")) {
+//                if (fetchField.contains(StringUtil.DOT)) {
+//                    String path = fetchField.substring(0, fetchField.lastIndexOf('.'));
+//                    String property = fetchField.substring(fetchField.lastIndexOf('.') + 1);
+//                    PathBuilder<T> joining = new PathBuilder<T>(
+//                            (Class<? extends T>) Class.forName("models.assessments." + CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, path) + "Entity"),
+//                            path+"Entity");
+//
+//                    Class<?> f = Class.forName("models.assessments." + CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, path) + "Entity").getConstructor().newInstance().getClass().getField(property).getType();
+//
+////                    joining.get(property); on(joining.get(property, f.getClass()).eq(pathBuilder.get(path)))
+//                    jpaQueryBase.join(pathBuilder.get(path, f.getClass()), joining)/*.select(joining.get(path, f.getClass()))*/;
+//
+//
+//                }
+//                else {
+//                    Class<?> f = getEntityClass().getField(fetchField).getType();
+//                    pathBuilder.get(fetchField, f);
+//
+//                    jpaQueryBase.select(pathBuilder);
+//                }
+//            }
 
         if (filters.size() > 0) {
             for (FilterDto filter : filters) {
